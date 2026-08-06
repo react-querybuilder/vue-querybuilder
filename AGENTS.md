@@ -62,15 +62,12 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
 
 ### Reactivity
 
-- The query is a `shallowRef`. A deep proxy defeats reference comparisons and is rejected by the
-  manager's Immer deep-freeze.
+- The query is a `shallowRef`. A deep proxy defeats reference comparisons and is rejected by the manager's Immer deep-freeze.
 - Always `toRaw()` a query before handing it to the manager.
-- Effects that write back into state use `watch` with an **explicit dependency array** and
-  `flush: 'post'` — never `watchEffect`, whose tracked set changes across branches.
-- Never pair `immediate: true` with `flush: 'post'`. Vue runs an immediate callback
-  _synchronously at watch creation_, ignoring the flush setting, which would apply a write before
-  first render and break DOM parity. Defer the mount-time run with `nextTick` instead, guarded by
-  an `onScopeDispose` flag.
+- Likewise `toRaw()` the **manager itself** before calling it. `QueryManager` keeps its history in private class fields, which a reactive `Proxy` cannot read through (`Cannot read private member #past`). `schema` is an ordinary computed value in normal use, but Vue Test Utils wraps mount props in `reactive`, and nothing stops a consumer from doing the same.
+- An internal component that receives a `useRule`/`useRuleGroup` return object as a **prop** should unwrap it with `reactive()`. Vue auto-unwraps refs only for top-level `setup` bindings, not through a prop, so the template would otherwise need `.value` everywhere. `reactive()` on a container of refs yields each `.value` directly and leaves plain functions alone. Forward the original object, not the proxy, when passing it further down.
+- Effects that write back into state use `watch` with an **explicit dependency array** and `flush: 'post'` — never `watchEffect`, whose tracked set changes across branches.
+- Never pair `immediate: true` with `flush: 'post'`. Vue runs an immediate callback _synchronously at watch creation_, ignoring the flush setting, which would apply a write before first render and break DOM parity. Defer the mount-time run with `nextTick` instead, guarded by an `onScopeDispose` flag.
 
 ### Props
 

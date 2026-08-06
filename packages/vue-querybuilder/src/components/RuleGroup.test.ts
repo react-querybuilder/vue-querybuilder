@@ -80,8 +80,14 @@ describe('RuleGroup', () => {
 
   it('omits the header combinator selector for independent combinators', () => {
     const ic = { rules: [flatQuery.rules[0], 'and', flatQuery.rules[1]] } as RuleGroupTypeAny;
-    const { queryByTestId, getAllByTestId } = render(RuleGroup, { props: setup(ic) });
-    expect(queryByTestId('combinators')).toBeNull();
+    const { container, getAllByTestId } = render(RuleGroup, { props: setup(ic) });
+    const header = container.querySelector('.ruleGroup-header')!;
+    expect(header.querySelector('[data-testid="combinators"]')).toBeNull();
+    // The only combinator selector is the inline one standing in for the `'and'` element.
+    expect(getAllByTestId('combinators')).toHaveLength(1);
+    expect(getAllByTestId('combinators')[0].closest('[data-testid="inline-combinator"]')).not.toBe(
+      null
+    );
     expect(getAllByTestId('rule')).toHaveLength(2);
   });
 
@@ -102,6 +108,36 @@ describe('RuleGroup', () => {
   it('passes its own disabled state down to its children', () => {
     const { getAllByTestId } = render(RuleGroup, { props: setup(flatQuery, { disabled: true }) });
     for (const select of getAllByTestId('fields')) expect(select).toBeDisabled();
+  });
+
+  it('renders the shift actions on a subgroup when showShiftActions is set', () => {
+    const nested: RuleGroupTypeAny = {
+      combinator: 'and',
+      rules: [{ combinator: 'or', rules: [] }],
+    };
+    const { getAllByTestId, queryAllByTestId } = render(RuleGroup, {
+      props: setup(nested, {}, { showShiftActions: true }),
+    });
+    // Only the subgroup gets them — the root has an empty path.
+    expect(queryAllByTestId('shift-actions')).toHaveLength(1);
+    expect(
+      getAllByTestId('shift-actions')[0].closest('[data-testid="rule-group"]')
+    ).toHaveAttribute('data-path', '[0]');
+    expect(getAllByTestId('shift-actions')[0].querySelectorAll('button')).toHaveLength(2);
+  });
+
+  it('renders the undo/redo actions only at the root when showUndoRedo is set', () => {
+    const nested: RuleGroupTypeAny = {
+      combinator: 'and',
+      rules: [{ combinator: 'or', rules: [] }],
+    };
+    const { getAllByTestId } = render(RuleGroup, {
+      props: setup(nested, {}, { showUndoRedo: true }),
+    });
+    expect(getAllByTestId('undo-redo-actions')).toHaveLength(1);
+    expect(
+      getAllByTestId('undo-redo-actions')[0].closest('[data-testid="rule-group"]')
+    ).toHaveAttribute('data-path', '[]');
   });
 
   it('renders a replacement group subcomponent from the schema controls', () => {

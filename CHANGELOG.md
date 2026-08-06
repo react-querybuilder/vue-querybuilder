@@ -16,9 +16,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Reactivity composables: `useQueryBuilder`, `useRule`, `useRuleGroup`, `useQueryActions`,
   `useValueEditorReset`, and the provide/inject context helpers.
 - Default components: `QueryBuilder`, `RuleGroup`, `Rule`, `ActionElement`, `ValueSelector`,
-  `ValueEditor`, the internal `Label`, and `defaultControlElements`. `inlineCombinator`,
-  `matchModeEditor`, `notToggle`, `shiftActions`, and `undoRedoActions` still resolve to
-  `nullComponent` and render nothing.
+  `ValueEditor`, `NotToggle`, `ShiftActions`, `InlineCombinator`, `MatchModeEditor`,
+  `UndoRedoActions`, the internal `Label`, and `defaultControlElements`. Every control key now
+  resolves to a real component; none maps to `nullComponent`.
+- Subquery support: `RuleComponents`, `RuleGroupHeader`, `RuleGroupBody`, and `RuleSubQuery`
+  (React's `RuleComponentsWithSubQuery`), with `Rule` and `RuleGroup` reduced to thin wrappers.
+  DOM output is unchanged for rules without a subquery.
+- Feature coverage: independent combinators, `showCombinatorsBetweenRules`, `showNotToggle`,
+  `showShiftActions`, `showCloneButtons`, `showLockButtons`, `showMuteButtons`, match modes and
+  subqueries, the `"parameter"` value source, `validator`/`validationMap`,
+  `accessibleDescriptionGenerator`, `disabled`/`disabledPaths`, `suppressStandardClassnames`,
+  `maxLevels`, and undo/redo.
+- Coverage gate over `packages/*/src/**` (90% lines) in the root `vitest.config.ts`.
 
 ### Changed (divergences from React Query Builder)
 
@@ -52,6 +61,13 @@ _The authoritative divergence list. Kept current at every step, not at the end._
   carries configuration only; state lives in the manager.
 - **`ValueSelector` drives a multi-select through each `<option>`'s `selected`**, not a `value`
   binding, which Vue would stringify. Rendered DOM is unchanged.
+- **Internal split components take `{ ruleProps, parts }` / `{ groupProps, parts }`**, and unwrap
+  `parts` with `reactive()`; the original ref-bearing object is what gets forwarded onward.
+- **`UndoRedoActions` reads history off `toRaw(schema.manager)`** — no Redux, no `qbId`, no
+  separate history entry point. `canUndo`/`canRedo` are wrapped in `computed`s that also touch
+  `ruleOrGroup` to establish a dependency.
+- **`RuleSubQuery` does not pass `enableDragAndDrop: false`** to the subquery's `useQueryBuilder`;
+  the prop would be inert since `data-dnd` is hard-coded to `"disabled"`.
 - **Not ported:** UI-framework compatibility packages, `expr`/`datetime` UI, async option lists,
   deprecated props and aliases, `ruleGroupHeaderElements`/`ruleGroupBodyElements`, `DragHandle`.
 

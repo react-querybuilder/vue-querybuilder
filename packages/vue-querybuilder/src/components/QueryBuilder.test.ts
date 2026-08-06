@@ -255,18 +255,20 @@ describe('QueryBuilder', () => {
     expect(queryByTestId('remove-rule')).toBeNull();
   });
 
-  it('renders nothing for the controls milestone B has not implemented yet', () => {
-    const { queryByTestId } = renderQB({
+  it('renders every optional control', () => {
+    const { queryAllByTestId } = renderQB({
       defaultQuery: flat,
       showNotToggle: true,
       showShiftActions: true,
       showUndoRedo: true,
       showCombinatorsBetweenRules: true,
     });
-    expect(queryByTestId('not-toggle')).toBeNull();
-    expect(queryByTestId('shift-actions')).toBeNull();
-    expect(queryByTestId('undo-redo-actions')).toBeNull();
-    expect(queryByTestId('inline-combinator')).toBeNull();
+    // Milestone B: no key resolves to `nullComponent` any more.
+    expect(queryAllByTestId('not-toggle')).toHaveLength(1);
+    // One per rule, plus one for the group itself (which is the root, so it renders none).
+    expect(queryAllByTestId('shift-actions')).toHaveLength(2);
+    expect(queryAllByTestId('undo-redo-actions')).toHaveLength(1);
+    expect(queryAllByTestId('inline-combinator')).toHaveLength(1);
   });
 
   it('applies a validator to the wrapper class', () => {

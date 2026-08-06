@@ -12,9 +12,9 @@ export default defineConfig({
       exclude: ['**/*.{test,spec,test-d}.*'],
       thresholds: {
         lines: 80,
-        // The reactive layer is load-bearing and has no DOM to backstop it, so it carries a
-        // higher bar than the package as a whole. Per-glob thresholds are absolute paths.
-        'packages/*/src/composables/**': { lines: 90 },
+        // Milestone B completes the component layer, so `src/` as a whole now carries a higher
+        // bar than the 80% floor the root keeps for anything added later.
+        'packages/*/src/**': { lines: 90 },
       },
     },
   },

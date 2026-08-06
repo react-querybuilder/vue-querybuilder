@@ -1,7 +1,16 @@
 export { default as ActionElement } from './ActionElement.vue';
+export { default as InlineCombinator } from './InlineCombinator.vue';
+export { default as MatchModeEditor } from './MatchModeEditor.vue';
+export { default as NotToggle } from './NotToggle.vue';
 export { default as QueryBuilder } from './QueryBuilder.vue';
 export { default as Rule } from './Rule.vue';
+export { default as RuleComponents } from './RuleComponents.vue';
 export { default as RuleGroup } from './RuleGroup.vue';
+export { default as RuleGroupBody } from './RuleGroupBody.vue';
+export { default as RuleGroupHeader } from './RuleGroupHeader.vue';
+export { default as RuleSubQuery } from './RuleSubQuery.vue';
+export { default as ShiftActions } from './ShiftActions.vue';
+export { default as UndoRedoActions } from './UndoRedoActions.vue';
 export { default as ValueEditor } from './ValueEditor.vue';
 export { default as ValueSelector } from './ValueSelector.vue';
 export * from './defaultControlElements.js';
