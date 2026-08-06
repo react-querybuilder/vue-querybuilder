@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-06
+
 ### Added
 
 - Repository bootstrap: Bun workspaces, Vite 8 library build with `preserveModules`, `vue-tsc`
@@ -130,3 +132,6 @@ unknown>` in `vue-tsc`'s emit), which matters only when a component is invoked t
   `disabledPaths`, `validator`, or `idGenerator` after mount updates rendering but not the
   manager's own defaults or prepared option lists. Function props are forwarded through closures
   and do stay live. Recreating the manager would discard undo history.
+
+[unreleased]: https://github.com/react-querybuilder/vue-querybuilder/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/react-querybuilder/vue-querybuilder/releases/tag/v0.1.0
