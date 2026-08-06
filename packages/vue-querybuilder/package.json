@@ -1,0 +1,75 @@
+{
+  "name": "vue-querybuilder",
+  "version": "0.0.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "Vue component for complex query building",
+  "keywords": [
+    "vue",
+    "query",
+    "builder",
+    "query-builder",
+    "filter",
+    "sql"
+  ],
+  "author": "Jake Boone",
+  "homepage": "https://github.com/react-querybuilder/vue-querybuilder",
+  "bugs": {
+    "url": "https://github.com/react-querybuilder/vue-querybuilder/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-querybuilder/vue-querybuilder.git",
+    "directory": "packages/vue-querybuilder"
+  },
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "sideEffects": [
+    "*.css",
+    "*.scss"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.test-d.*",
+    "!dist/**/*.spec.*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./dist/*.css": "./dist/*.css",
+    "./dist/*.scss": "./dist/*.scss",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "prepack": "bun run ./scripts/copy-readme.ts",
+    "postpack": "rm -f README.md",
+    "build": "bun run build:main && bun run build:types && bun run build:css",
+    "build:main": "vite build",
+    "build:types": "vue-tsc -p tsconfig.build.json --emitDeclarationOnly --declarationDir dist && find dist \\( -name '*.test.*' -o -name '*.test-d.*' -o -name '*.spec.*' \\) -delete",
+    "build:css": "mkdir -p dist/styles && cp ../../node_modules/@react-querybuilder/core/dist/*.scss dist && cp ../../node_modules/@react-querybuilder/core/dist/styles/*.scss dist/styles && cp -f src/styles/*.scss dist/styles 2>/dev/null || true; bun sass --style=compressed dist",
+    "check": "vue-tsc --noEmit -p tsconfig.json",
+    "check:exports": "bun run ./scripts/check-dist-specifiers.ts && attw --pack . --profile esm-only",
+    "conformance": "bun run conformance:fetch && bun run conformance:test",
+    "conformance:fetch": "bun ./scripts/fetch-fixtures.ts",
+    "conformance:test": "vitest run --config vitest.conformance.config.ts"
+  },
+  "peerDependencies": {
+    "vue": "^3.5"
+  },
+  "dependencies": {
+    "@react-querybuilder/core": "^8.22.2"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.41",
+    "vue-tsc": "^3.3.9"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

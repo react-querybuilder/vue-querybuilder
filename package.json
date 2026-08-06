@@ -1,0 +1,48 @@
+{
+  "name": "vue-querybuilder-monorepo",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter vue-querybuilder build",
+    "check": "bun run --filter vue-querybuilder check",
+    "check:exports": "bun run --filter vue-querybuilder check:exports",
+    "check:all": "bun run fmt:check && bun run build && bun run check && bun run check:exports && bun run lint && bun run test:coverage && bun run conformance && bun run test:ssr",
+    "lint": "oxlint",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ssr": "echo 'test:ssr placeholder — implemented in step 8' && exit 0",
+    "conformance": "bun run --filter vue-querybuilder conformance"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/user-event": "^14.6.3",
+    "@testing-library/vue": "^8.1.0",
+    "@types/bun": "^1.3.14",
+    "@types/node": "^26.1.2",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vue/test-utils": "^2.4.11",
+    "jsdom": "^30.0.1",
+    "oxfmt": "^0.62.0",
+    "oxlint": "^1.77.0",
+    "sass": "^1.102.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10",
+    "vitest-axe": "^0.1.0",
+    "vue": "^3.5.41",
+    "vue-tsc": "^3.3.9"
+  },
+  "overrides": {
+    "@testing-library/dom": "^10.4.1"
+  }
+}

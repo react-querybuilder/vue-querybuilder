@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.nuxt/
+.output/
+coverage/
+
+# Conformance fixtures (downloaded by scripts/fetch-fixtures.ts)
+packages/vue-querybuilder/test/fixtures/
+*.tar.gz
+*.tar.gz.sha256
+
+# Misc
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+.idea
+.vscode/*
+!.vscode/extensions.json
+.tmp
