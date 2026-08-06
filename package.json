@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "build": "bun run --filter vue-querybuilder build",
-    "check": "bun run --filter vue-querybuilder check",
+    "check": "bun run --filter vue-querybuilder check && bun run check:examples",
+    "check:examples": "bun run --filter '@vue-querybuilder/example-*' check",
     "check:exports": "bun run --filter vue-querybuilder check:exports",
     "check:all": "bun run fmt:check && bun run build && bun run check && bun run check:exports && bun run lint && bun run test:coverage && bun run conformance && bun run test:ssr",
     "lint": "oxlint",
@@ -18,7 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ssr": "echo 'test:ssr placeholder — implemented in step 8' && exit 0",
+    "test:ssr": "bun run --filter @vue-querybuilder/example-nuxt test:ssr",
     "conformance": "bun run --filter vue-querybuilder conformance"
   },
   "devDependencies": {

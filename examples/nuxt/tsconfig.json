@@ -1,0 +1,16 @@
+{
+  // Solution-style config. Nuxt generates the four project configs into `.nuxt/` at
+  // `nuxt prepare` time, and `nuxt typecheck` builds all four.
+  //
+  // The generated configs already set `skipLibCheck: true`, which this example needs:
+  // `@react-querybuilder/core`'s declarations carry type-only imports of optional integrations
+  // (`json-logic-js`, `drizzle-orm`, `sequelize`, `@tanstack/db`) that a consumer is not
+  // required to install.
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
+}

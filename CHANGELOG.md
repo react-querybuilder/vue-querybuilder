@@ -35,6 +35,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   bare `QueryManager` and the guard-sensitive subset through the manager `useQueryBuilder` builds
   from props, and a `formatQuery` → `parseSQL` → `formatQuery` round trip over all nine fixture
   queries.
+- `examples/demo` — Vite + Vue. Aliases the library source for HMR with no build step, and
+  demonstrates seven field types, standard and independent-combinator queries, every display
+  flag, undo/redo, and live `formatQuery` output in four formats.
+- `examples/nuxt` — Nuxt 4. Depends on `vue-querybuilder: workspace:*`, so it consumes the built
+  `dist` and exercises the publishable artifact: the package `exports` map, its condition order,
+  and the emitted declarations. Renders a nested independent-combinators query and calls
+  `formatQuery` in a Nitro server route.
+- SSR gate: `examples/nuxt/ssr-smoke-test.ts`, wired as `bun run test:ssr` and run in CI. Builds
+  the example, serves `.output` on an ephemeral port through Nitro's exported Node listener
+  (never a spawned CLI), then asserts 14 substrings of the server-rendered HTML — the wrapper
+  class, `role`, `data-dnd`, `data-inlinecombinators`, five `data-path` values, three
+  `data-testid`s, a consumer-supplied control's label, and the server-side `formatQuery` output —
+  and greps for `document is not defined` / `window is not defined` / `ReferenceError`, which an
+  SSR framework can render into a 200 response.
+- Root `check` fans out to the examples, so an example type error breaks CI.
+- Documentation: `README.md`, `docs/differences-from-react-querybuilder.md`, and
+  `docs/styling.md`.
 
 ### Changed (divergences from React Query Builder)
 

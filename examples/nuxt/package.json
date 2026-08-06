@@ -1,0 +1,20 @@
+{
+  "name": "@vue-querybuilder/example-nuxt",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "check": "nuxt prepare && nuxt typecheck",
+    "test:ssr": "bun ./ssr-smoke-test.ts"
+  },
+  "dependencies": {
+    "nuxt": "^4.2.0",
+    "vue": "^3.5.41",
+    "vue-querybuilder": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.3.9"
+  }
+}

@@ -24,13 +24,48 @@ vue-querybuilder/
 
 - `bun install`
 - `bun run build` — vite lib build, then `vue-tsc` d.ts emit, then CSS
-- `bun run check` — `vue-tsc --noEmit`
 - `bun run test` / `bun run test:coverage` — Vitest. **Never `bun test`**; that is Bun's builtin
   runner and bypasses Vitest entirely.
 - `bun run conformance` — fetch fixtures, then run the DOM-parity suites
 - `bun run test:ssr` — Nuxt SSR smoke test (phase gate)
+- `bun run check` — `vue-tsc --noEmit`, then fans out to `check:examples`
 - `bun run lint`, `bun run fmt`, `bun run fmt:check`
 - `bun run check:all` — everything CI runs
+
+## Examples
+
+Both live in `examples/` and are workspace packages named `@vue-querybuilder/example-*`. Root
+`check` fans out to them, so an example type error breaks CI.
+
+- **`examples/demo`** (Vite + Vue) aliases the library **source** (`vue-querybuilder` →
+  `packages/vue-querybuilder/src/index.ts`) for HMR with no build. It also aliases
+  `vue-querybuilder/dist/*.css` to `@react-querybuilder/core/dist/*.css` — byte-identical — so
+  `main.ts` writes the same CSS import line a real consumer writes. **The CSS alias must be
+  listed first**, or the bare-specifier alias swallows it.
+- **`examples/nuxt`** (Nuxt 4) depends on `vue-querybuilder: workspace:*`, i.e. it consumes the
+  built `dist`. That is the point: the SSR gate tests the **publishable artifact** — the
+  `exports` map, its condition order, the emitted `.d.ts` — not the source tree. **`bun run build`
+  must run before `test:ssr`.**
+
+### Nuxt example specifics
+
+- `nitro.preset: 'node'`, which exports a plain Node `listener` from
+  `.output/server/index.mjs`. `ssr-smoke-test.ts` serves that on an **ephemeral port** through
+  `node:http`. **Never a spawned CLI**: `nuxt preview` can leave an orphan holding the port and
+  serving a stale build, which silently poisons the next run.
+- Shared modules must be imported via the **`#shared/*` alias**, not a relative path. Nitro
+  cannot resolve a relative `../../shared/x` out of a bundled page chunk.
+- `check` is `nuxt prepare && nuxt typecheck`. The root `tsconfig.json` is solution-style and
+  references the four configs Nuxt generates into `.nuxt/`; those already set
+  `skipLibCheck: true`, which this example needs — core's declarations carry type-only imports of
+  optional integrations (`json-logic-js`, `drizzle-orm`, `sequelize`, `@tanstack/db`) that a
+  consumer is not required to install.
+- Vue's SSR escapes text content, so assertions on rendered text must match the escaped form
+  (`'` → `&#39;`). `ssr-smoke-test.ts` has an `escapeHtml` helper for this.
+- An SSR framework renders an **error page**, not a 500, for many failures — so the smoke test
+  greps the HTML for `document is not defined` / `window is not defined` / `ReferenceError` in
+  addition to checking the status code.
+- Both examples are excluded from `oxfmt` (`ignorePatterns` in `.oxfmtrc.json`).
 
 ## Authoring constraints
 
@@ -110,6 +145,12 @@ friends) is per-instance. Drop the override once `@testing-library/vue` moves to
 
 **Standing rule: every gate must be proven to fail.** When a step adds a gate, deliberately break
 it, record that it went red, then revert. A gate that cannot fail is worse than none.
+
+Current gates: `fmt:check`, `build`, `check` (library + examples), `check:exports`, `lint`,
+`test:coverage` (three thresholds), `conformance` (DOM parity, 232 tests), `test:ssr`.
+
+The SSR gate is proven red by injecting a DOM access (`document.title = '…'`) into
+`QueryBuilder.vue`'s `<script setup>`, rebuilding, and confirming HTTP 500 and a non-zero exit.
 
 ## Coverage
 
