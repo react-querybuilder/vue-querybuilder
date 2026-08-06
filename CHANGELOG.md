@@ -28,6 +28,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `accessibleDescriptionGenerator`, `disabled`/`disabledPaths`, `suppressStandardClassnames`,
   `maxLevels`, and undo/redo.
 - Coverage gate over `packages/*/src/**` (90% lines) in the root `vitest.config.ts`.
+- Conformance harness: `scripts/fetch-fixtures.ts` (pinned to the upstream `v8.22.2` release
+  asset, checksum- and `schemaVersion`-verified) plus `test/conformance/`, run separately via
+  `bun run conformance`. Asserts full DOM parity — 49 classname cases (byte-identical `class`
+  attributes in document order), 49 accessible-description cases, 58 action sequences through a
+  bare `QueryManager` and the guard-sensitive subset through the manager `useQueryBuilder` builds
+  from props, and a `formatQuery` → `parseSQL` → `formatQuery` round trip over all nine fixture
+  queries.
 
 ### Changed (divergences from React Query Builder)
 
