@@ -6,9 +6,9 @@
  * breaks Node16/NodeNext ESM resolution for consumers (`ERR_UNSUPPORTED_DIR_IMPORT`). Bundlers
  * tolerate it, so nothing else in CI notices.
  *
- * `attw` can't catch this on its own: it reports `.vue` imports in `.d.ts` files as errors too
- * (TypeScript has no built-in `.vue` resolver). This check is the narrow, false-positive-free
- * version.
+ * `.vue` specifiers are rejected outright: `scripts/normalize-sfc-declarations.ts` rewrites them
+ * to the `./Foo.js` form that both `tsc` and `vue-tsc` can resolve, so one surviving in `dist`
+ * means that step did not run or did not cover a case.
  */
 import { Glob } from 'bun';
 import { existsSync } from 'node:fs';
@@ -21,14 +21,12 @@ if (!existsSync(distDir)) {
   process.exit(1);
 }
 
-/** Extensions that resolve without further lookup in Node ESM (or via the Vue/Vite plugin). */
-const RESOLVABLE = ['.js', '.vue', '.css', '.scss', '.json'];
+/** Extensions that resolve without further lookup in Node ESM. */
+const RESOLVABLE = ['.js', '.css', '.scss', '.json'];
 
 const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*)(['"])(\.\.?\/[^'"]*)\1/g;
 
 /**
- * `vue-tsc` emits `Foo.vue.d.ts` for `Foo.vue`, so a `./Foo.vue` specifier resolves to either.
- *
  * A `./foo.js` specifier in a `.d.ts` file may also legitimately resolve to a sibling `foo.d.ts`
  * with no `foo.js` alongside it: that is what a type-only module looks like after the bundler
  * erases it. TypeScript resolves the specifier through the declaration file, and the import
@@ -37,7 +35,6 @@ const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*)(['"])(\.\.?\/[^'"]*)\1/g;
 const resolvesTo = (from: string, spec: string): boolean => {
   const abs = resolve(dirname(from), spec);
   if (existsSync(abs)) return true;
-  if (spec.endsWith('.vue')) return existsSync(`${abs}.d.ts`);
   if (from.endsWith('.d.ts') && spec.endsWith('.js')) {
     return existsSync(abs.replace(/\.js$/, '.d.ts'));
   }

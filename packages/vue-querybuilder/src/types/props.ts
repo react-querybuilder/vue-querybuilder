@@ -423,6 +423,302 @@ export interface QueryBuilderContextProps<
 }
 
 /**
+ * The body of {@link QueryBuilderProps}, with the rule type `R` supplied explicitly rather than
+ * inferred.
+ *
+ * This exists because Vue's SFC compiler cannot enumerate the keys of a conditional type: a
+ * `defineProps<QueryBuilderProps>()` fails to compile with `Unresolvable type:
+ * TSConditionalType`. `QueryBuilder.vue` therefore declares its props with this interface, and
+ * {@link QueryBuilderProps} is the conditional wrapper that infers `R` for consumers. The two
+ * are the same type once `R` is resolved.
+ *
+ * @group Props
+ */
+export interface QueryBuilderPropsBase<
+  RG extends RuleGroupTypeAny = RuleGroupType,
+  R extends RuleType = RuleType,
+  F extends FullField = FullField,
+  O extends FullOperator = FullOperator,
+  C extends FullCombinator = FullCombinator,
+> extends QueryBuilderContextProps<F, GetOptionIdentifierType<O>> {
+  /**
+   * An externally-created {@link QueryManager} to drive this query builder. When provided,
+   * the query builder subscribes to it instead of creating its own manager, which allows
+   * the query to be manipulated from outside the component tree.
+   */
+  manager?: QueryManager<RG, F, O, C>;
+  /**
+   * Initial query object for uncontrolled components.
+   */
+  defaultQuery?: RG;
+  /**
+   * Query object for controlled components. Also assignable with `v-model:query`.
+   */
+  query?: RG;
+  /**
+   * List of valid {@link FullField}s.
+   *
+   * @default []
+   */
+  fields?: FlexibleOptionListProp<F> | BaseOptionMap<F>;
+  /**
+   * List of valid {@link FullOperator}s.
+   *
+   * @default defaultOperators
+   */
+  operators?: FlexibleOptionListProp<O>;
+  /**
+   * List of valid {@link FullCombinator}s.
+   *
+   * @default defaultCombinators
+   */
+  combinators?: FlexibleOptionListProp<C>;
+  /**
+   * Default properties applied to all objects in the `fields` prop. Properties on
+   * individual field definitions will override these.
+   */
+  baseField?: Record<string, unknown>;
+  /**
+   * Default properties applied to all objects in the `operators` prop. Properties on
+   * individual operator definitions will override these.
+   */
+  baseOperator?: Record<string, unknown>;
+  /**
+   * Default properties applied to all objects in the `combinators` prop. Properties on
+   * individual combinator definitions will override these.
+   */
+  baseCombinator?: Record<string, unknown>;
+  /**
+   * The default `field` value for new rules. This can be the field `name`
+   * itself or a function that returns a valid {@link FullField} `name` given
+   * the `fields` list.
+   */
+  getDefaultField?: GetOptionIdentifierType<F> | ((fieldsData: FullOptionList<F>) => string);
+  /**
+   * The default `operator` value for new rules. This can be the operator
+   * `name` or a function that returns a valid {@link FullOperator} `name` for
+   * a given field name.
+   */
+  getDefaultOperator?:
+    | GetOptionIdentifierType<O>
+    | ((field: GetOptionIdentifierType<F>, misc: { fieldData: F }) => string);
+  /**
+   * Returns the default `value` for new rules.
+   */
+  // oxlint-disable-next-line typescript/no-explicit-any
+  getDefaultValue?(rule: R, misc: { fieldData: F }): any;
+  /**
+   * This function should return the list of allowed {@link FullOperator}s
+   * for the given {@link FullField} `name`. If `null` is returned, the
+   * default operators are used.
+   */
+  getOperators?(
+    field: GetOptionIdentifierType<F>,
+    misc: { fieldData: F }
+  ): FlexibleOptionListProp<FullOperator> | null;
+  /**
+   * This function should return the type of value editor (see
+   * {@link ValueEditorType}) for the given field `name` and operator `name`.
+   */
+  getValueEditorType?(
+    field: GetOptionIdentifierType<F>,
+    operator: GetOptionIdentifierType<O>,
+    misc: { fieldData: F }
+  ): ValueEditorType;
+  /**
+   * This function should return the separator element for a given field
+   * `name` and operator `name`. It will be placed in between value editors
+   * when multiple editors are rendered, such as when the `operator` is
+   * `"between"`.
+   */
+  getValueEditorSeparator?(
+    field: GetOptionIdentifierType<F>,
+    operator: GetOptionIdentifierType<O>,
+    misc: { fieldData: F }
+  ): LabelNode;
+  /**
+   * This function should return the list of valid {@link ValueSources}
+   * for a given field `name` and operator `name`.
+   */
+  getValueSources?(
+    field: GetOptionIdentifierType<F>,
+    operator: GetOptionIdentifierType<O>,
+    misc: { fieldData: F }
+  ): ValueSources | ValueSourceFlexibleOptions;
+  /**
+   * This function should return a list of named parameters to be presented
+   * as options when a rule's `valueSource` is `"parameter"`.
+   */
+  getParameters?(
+    field?: GetOptionIdentifierType<F>,
+    operator?: GetOptionIdentifierType<O>,
+    misc?: { fieldData: F }
+  ): FlexibleOptionListProp<FullOption>;
+  /**
+   * This function should return the `type` of `<input />` for the given field `name`
+   * and operator `name`.
+   */
+  getInputType?(
+    field: GetOptionIdentifierType<F>,
+    operator: GetOptionIdentifierType<O>,
+    misc: { fieldData: F }
+  ): InputType | null;
+  /**
+   * This function should return the list of allowed values for the
+   * given field `name` and operator `name`.
+   */
+  getValues?(
+    field: GetOptionIdentifierType<F>,
+    operator: GetOptionIdentifierType<O>,
+    misc: { fieldData: F }
+  ): FlexibleOptionListProp<Option>;
+  /**
+   * This function should return the list of valid {@link MatchMode}s or
+   * {@link MatchConfig}s for a given field `name`.
+   */
+  getMatchModes?(
+    field: GetOptionIdentifierType<F>,
+    misc: { fieldData: F }
+  ): boolean | MatchMode[] | FlexibleOption<MatchMode>[];
+  /**
+   * This function should return any props that a subquery (see {@link MatchMode})
+   * should override from the props provided to this query builder.
+   */
+  getSubQueryBuilderProps?(
+    field: GetOptionIdentifierType<F>,
+    misc: { fieldData: F }
+  ): QueryBuilderProps<GenericizeRuleGroupType<RG>, FullOption, FullOption, FullOption>;
+  /**
+   * The return value of this function will be used to apply classnames to the
+   * outer `<div>` of the given rule.
+   */
+  getRuleClassname?(rule: R, misc: { fieldData: F }): Classname;
+  /**
+   * The return value of this function will be used to apply classnames to the
+   * outer `<div>` of the given rule group.
+   */
+  getRuleGroupClassname?(ruleGroup: RG): Classname;
+  /**
+   * This callback is invoked before a new rule is added.
+   */
+  // oxlint-disable-next-line typescript/no-explicit-any
+  onAddRule?(rule: R, parentPath: Path, query: RG, context?: any): RuleType | boolean;
+  /**
+   * This callback is invoked before a new group is added.
+   */
+  // oxlint-disable-next-line typescript/no-explicit-any
+  onAddGroup?(ruleGroup: RG, parentPath: Path, query: RG, context?: any): RG | boolean;
+  /**
+   * This callback is invoked before a rule is moved or shifted.
+   */
+  onMoveRule?(
+    rule: R,
+    fromPath: Path,
+    toPath: Path | 'up' | 'down',
+    query: RG,
+    nextQuery: RG,
+    options: MoveOptions,
+    // oxlint-disable-next-line typescript/no-explicit-any
+    context?: any
+  ): RG | boolean;
+  /**
+   * This callback is invoked before a group is moved or shifted.
+   */
+  onMoveGroup?(
+    ruleGroup: RG,
+    fromPath: Path,
+    toPath: Path | 'up' | 'down',
+    query: RG,
+    nextQuery: RG,
+    options: MoveOptions,
+    // oxlint-disable-next-line typescript/no-explicit-any
+    context?: any
+  ): RG | boolean;
+  /**
+   * This callback is invoked before a rule is grouped with another object.
+   */
+  onGroupRule?(
+    rule: R,
+    fromPath: Path,
+    toPath: Path,
+    query: RG,
+    nextQuery: RG,
+    options: GroupOptions,
+    // oxlint-disable-next-line typescript/no-explicit-any
+    context?: any
+  ): RG | boolean;
+  /**
+   * This callback is invoked before a group is grouped with another object.
+   */
+  onGroupGroup?(
+    ruleGroup: RG,
+    fromPath: Path,
+    toPath: Path,
+    query: RG,
+    nextQuery: RG,
+    options: GroupOptions,
+    // oxlint-disable-next-line typescript/no-explicit-any
+    context?: any
+  ): RG | boolean;
+  /**
+   * This callback is invoked before a rule or group is removed.
+   */
+  // oxlint-disable-next-line typescript/no-explicit-any
+  onRemove?(ruleOrGroup: R | RG, path: Path, query: RG, context?: any): boolean;
+  /**
+   * This callback is invoked anytime the query state is updated. Equivalent to listening
+   * for the `update:query` event.
+   */
+  onQueryChange?(query: RG): void;
+  /**
+   * Each log object will be passed to this function when `debugMode` is `true`.
+   *
+   * @default console.log
+   */
+  // oxlint-disable-next-line typescript/no-explicit-any
+  onLog?(obj: any): void;
+  /**
+   * Disables the entire query builder if true, or the rules and groups at
+   * the specified paths (as well as all child rules/groups and subcomponents)
+   * if an array of paths is provided.
+   *
+   * @default false
+   */
+  disabled?: boolean | Path[];
+  /**
+   * Store values as numbers whenever possible.
+   *
+   * @default false
+   */
+  parseNumbers?: ParseNumbersPropConfig;
+  /**
+   * Query validation function.
+   */
+  validator?: QueryValidator;
+  /**
+   * `id` generator function. Should always produce a unique/random value.
+   *
+   * @default crypto.randomUUID
+   */
+  idGenerator?: () => string;
+  /**
+   * Generator function for the `title` attribute applied to the outermost `<div>` of each
+   * rule group.
+   */
+  accessibleDescriptionGenerator?: AccessibleDescriptionGenerator;
+  /**
+   * Maximum number of levels deep the query is allowed to go. The minimum is 1; values
+   * less than 1 will be ignored.
+   */
+  maxLevels?: number;
+  /**
+   * Container for custom props that are passed to all components.
+   */
+  // oxlint-disable-next-line typescript/no-explicit-any
+  context?: any;
+}
+
+/**
  * Props for `QueryBuilder`.
  *
  * Notes:
@@ -446,283 +742,7 @@ export type QueryBuilderProps<
   O extends FullOperator = FullOperator,
   C extends FullCombinator = FullCombinator,
 > = RG extends RuleGroupType<infer R> | RuleGroupTypeIC<infer R>
-  ? QueryBuilderContextProps<F, GetOptionIdentifierType<O>> & {
-      /**
-       * An externally-created {@link QueryManager} to drive this query builder. When provided,
-       * the query builder subscribes to it instead of creating its own manager, which allows
-       * the query to be manipulated from outside the component tree.
-       */
-      manager?: QueryManager<RG, F, O, C>;
-      /**
-       * Initial query object for uncontrolled components.
-       */
-      defaultQuery?: RG;
-      /**
-       * Query object for controlled components. Also assignable with `v-model:query`.
-       */
-      query?: RG;
-      /**
-       * List of valid {@link FullField}s.
-       *
-       * @default []
-       */
-      fields?: FlexibleOptionListProp<F> | BaseOptionMap<F>;
-      /**
-       * List of valid {@link FullOperator}s.
-       *
-       * @default defaultOperators
-       */
-      operators?: FlexibleOptionListProp<O>;
-      /**
-       * List of valid {@link FullCombinator}s.
-       *
-       * @default defaultCombinators
-       */
-      combinators?: FlexibleOptionListProp<C>;
-      /**
-       * Default properties applied to all objects in the `fields` prop. Properties on
-       * individual field definitions will override these.
-       */
-      baseField?: Record<string, unknown>;
-      /**
-       * Default properties applied to all objects in the `operators` prop. Properties on
-       * individual operator definitions will override these.
-       */
-      baseOperator?: Record<string, unknown>;
-      /**
-       * Default properties applied to all objects in the `combinators` prop. Properties on
-       * individual combinator definitions will override these.
-       */
-      baseCombinator?: Record<string, unknown>;
-      /**
-       * The default `field` value for new rules. This can be the field `name`
-       * itself or a function that returns a valid {@link FullField} `name` given
-       * the `fields` list.
-       */
-      getDefaultField?: GetOptionIdentifierType<F> | ((fieldsData: FullOptionList<F>) => string);
-      /**
-       * The default `operator` value for new rules. This can be the operator
-       * `name` or a function that returns a valid {@link FullOperator} `name` for
-       * a given field name.
-       */
-      getDefaultOperator?:
-        | GetOptionIdentifierType<O>
-        | ((field: GetOptionIdentifierType<F>, misc: { fieldData: F }) => string);
-      /**
-       * Returns the default `value` for new rules.
-       */
-      // oxlint-disable-next-line typescript/no-explicit-any
-      getDefaultValue?(rule: R, misc: { fieldData: F }): any;
-      /**
-       * This function should return the list of allowed {@link FullOperator}s
-       * for the given {@link FullField} `name`. If `null` is returned, the
-       * default operators are used.
-       */
-      getOperators?(
-        field: GetOptionIdentifierType<F>,
-        misc: { fieldData: F }
-      ): FlexibleOptionListProp<FullOperator> | null;
-      /**
-       * This function should return the type of value editor (see
-       * {@link ValueEditorType}) for the given field `name` and operator `name`.
-       */
-      getValueEditorType?(
-        field: GetOptionIdentifierType<F>,
-        operator: GetOptionIdentifierType<O>,
-        misc: { fieldData: F }
-      ): ValueEditorType;
-      /**
-       * This function should return the separator element for a given field
-       * `name` and operator `name`. It will be placed in between value editors
-       * when multiple editors are rendered, such as when the `operator` is
-       * `"between"`.
-       */
-      getValueEditorSeparator?(
-        field: GetOptionIdentifierType<F>,
-        operator: GetOptionIdentifierType<O>,
-        misc: { fieldData: F }
-      ): LabelNode;
-      /**
-       * This function should return the list of valid {@link ValueSources}
-       * for a given field `name` and operator `name`.
-       */
-      getValueSources?(
-        field: GetOptionIdentifierType<F>,
-        operator: GetOptionIdentifierType<O>,
-        misc: { fieldData: F }
-      ): ValueSources | ValueSourceFlexibleOptions;
-      /**
-       * This function should return a list of named parameters to be presented
-       * as options when a rule's `valueSource` is `"parameter"`.
-       */
-      getParameters?(
-        field?: GetOptionIdentifierType<F>,
-        operator?: GetOptionIdentifierType<O>,
-        misc?: { fieldData: F }
-      ): FlexibleOptionListProp<FullOption>;
-      /**
-       * This function should return the `type` of `<input />` for the given field `name`
-       * and operator `name`.
-       */
-      getInputType?(
-        field: GetOptionIdentifierType<F>,
-        operator: GetOptionIdentifierType<O>,
-        misc: { fieldData: F }
-      ): InputType | null;
-      /**
-       * This function should return the list of allowed values for the
-       * given field `name` and operator `name`.
-       */
-      getValues?(
-        field: GetOptionIdentifierType<F>,
-        operator: GetOptionIdentifierType<O>,
-        misc: { fieldData: F }
-      ): FlexibleOptionListProp<Option>;
-      /**
-       * This function should return the list of valid {@link MatchMode}s or
-       * {@link MatchConfig}s for a given field `name`.
-       */
-      getMatchModes?(
-        field: GetOptionIdentifierType<F>,
-        misc: { fieldData: F }
-      ): boolean | MatchMode[] | FlexibleOption<MatchMode>[];
-      /**
-       * This function should return any props that a subquery (see {@link MatchMode})
-       * should override from the props provided to this query builder.
-       */
-      getSubQueryBuilderProps?(
-        field: GetOptionIdentifierType<F>,
-        misc: { fieldData: F }
-      ): QueryBuilderProps<GenericizeRuleGroupType<RG>, FullOption, FullOption, FullOption>;
-      /**
-       * The return value of this function will be used to apply classnames to the
-       * outer `<div>` of the given rule.
-       */
-      getRuleClassname?(rule: R, misc: { fieldData: F }): Classname;
-      /**
-       * The return value of this function will be used to apply classnames to the
-       * outer `<div>` of the given rule group.
-       */
-      getRuleGroupClassname?(ruleGroup: RG): Classname;
-      /**
-       * This callback is invoked before a new rule is added.
-       */
-      // oxlint-disable-next-line typescript/no-explicit-any
-      onAddRule?(rule: R, parentPath: Path, query: RG, context?: any): RuleType | boolean;
-      /**
-       * This callback is invoked before a new group is added.
-       */
-      // oxlint-disable-next-line typescript/no-explicit-any
-      onAddGroup?(ruleGroup: RG, parentPath: Path, query: RG, context?: any): RG | boolean;
-      /**
-       * This callback is invoked before a rule is moved or shifted.
-       */
-      onMoveRule?(
-        rule: R,
-        fromPath: Path,
-        toPath: Path | 'up' | 'down',
-        query: RG,
-        nextQuery: RG,
-        options: MoveOptions,
-        // oxlint-disable-next-line typescript/no-explicit-any
-        context?: any
-      ): RG | boolean;
-      /**
-       * This callback is invoked before a group is moved or shifted.
-       */
-      onMoveGroup?(
-        ruleGroup: RG,
-        fromPath: Path,
-        toPath: Path | 'up' | 'down',
-        query: RG,
-        nextQuery: RG,
-        options: MoveOptions,
-        // oxlint-disable-next-line typescript/no-explicit-any
-        context?: any
-      ): RG | boolean;
-      /**
-       * This callback is invoked before a rule is grouped with another object.
-       */
-      onGroupRule?(
-        rule: R,
-        fromPath: Path,
-        toPath: Path,
-        query: RG,
-        nextQuery: RG,
-        options: GroupOptions,
-        // oxlint-disable-next-line typescript/no-explicit-any
-        context?: any
-      ): RG | boolean;
-      /**
-       * This callback is invoked before a group is grouped with another object.
-       */
-      onGroupGroup?(
-        ruleGroup: RG,
-        fromPath: Path,
-        toPath: Path,
-        query: RG,
-        nextQuery: RG,
-        options: GroupOptions,
-        // oxlint-disable-next-line typescript/no-explicit-any
-        context?: any
-      ): RG | boolean;
-      /**
-       * This callback is invoked before a rule or group is removed.
-       */
-      // oxlint-disable-next-line typescript/no-explicit-any
-      onRemove?(ruleOrGroup: R | RG, path: Path, query: RG, context?: any): boolean;
-      /**
-       * This callback is invoked anytime the query state is updated. Equivalent to listening
-       * for the `update:query` event.
-       */
-      onQueryChange?(query: RG): void;
-      /**
-       * Each log object will be passed to this function when `debugMode` is `true`.
-       *
-       * @default console.log
-       */
-      // oxlint-disable-next-line typescript/no-explicit-any
-      onLog?(obj: any): void;
-      /**
-       * Disables the entire query builder if true, or the rules and groups at
-       * the specified paths (as well as all child rules/groups and subcomponents)
-       * if an array of paths is provided.
-       *
-       * @default false
-       */
-      disabled?: boolean | Path[];
-      /**
-       * Store values as numbers whenever possible.
-       *
-       * @default false
-       */
-      parseNumbers?: ParseNumbersPropConfig;
-      /**
-       * Query validation function.
-       */
-      validator?: QueryValidator;
-      /**
-       * `id` generator function. Should always produce a unique/random value.
-       *
-       * @default crypto.randomUUID
-       */
-      idGenerator?: () => string;
-      /**
-       * Generator function for the `title` attribute applied to the outermost `<div>` of each
-       * rule group.
-       */
-      accessibleDescriptionGenerator?: AccessibleDescriptionGenerator;
-      /**
-       * Maximum number of levels deep the query is allowed to go. The minimum is 1; values
-       * less than 1 will be ignored.
-       */
-      maxLevels?: number;
-      /**
-       * Container for custom props that are passed to all components.
-       */
-      // oxlint-disable-next-line typescript/no-explicit-any
-      context?: any;
-    }
+  ? QueryBuilderPropsBase<RG, R, F, O, C>
   : never;
 
 /**

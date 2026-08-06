@@ -52,6 +52,13 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
   text nodes, which breaks byte-level parity.
 - Element order and conditional rendering are specified by React's `Rule.tsx` / `RuleGroup.tsx`.
   Read them as a spec, not as code to translate.
+- Template whitespace is safe between elements — Vue's `condense` mode drops a whitespace-only
+  text node that contains a newline when it is leading, trailing, or between two elements. It is
+  **not** safe next to a `{{ }}` interpolation, which condenses to a single space instead. Render
+  every label through `Label` (a component, so it counts as an element) rather than interpolating.
+- Every default control sets `inheritAttrs: false`. `Rule`/`RuleGroup` hand each subcomponent a
+  common prop bag (`rule`, `rules`, `ruleOrGroup`, `fieldData`, ...) that most of them do not
+  declare; without this those land on the DOM as stray attributes React never emits.
 
 ### Reactivity
 
@@ -65,6 +72,18 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
   first render and break DOM parity. Defer the mount-time run with `nextTick` instead, guarded by
   an `onScopeDispose` flag.
 
+### Props
+
+- **Every boolean prop needs an explicit `undefined` default.** Vue casts an omitted `Boolean`
+  prop to `false`, which is not the same as "not configured": `autoSelectField`,
+  `enableMountQueryChange`, and the `resetOn*` flags all default to `true`, and a stray `false`
+  would also override an inherited context value. `QueryBuilder.vue` passes every flag through
+  `withDefaults(..., { flag: undefined })`.
+- **`defineProps<T>()` cannot take a conditional type.** The SFC compiler enumerates prop keys
+  itself and fails with `Unresolvable type: TSConditionalType`. `QueryBuilderProps` stays the
+  conditional public type; its body lives in the non-conditional `QueryBuilderPropsBase`, which
+  is what the component declares.
+
 ### Types
 
 - `ReactNode` → `LabelNode` (`VNodeChild | string`); titles stay `string`.
@@ -74,6 +93,11 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
   for TS modules. `vue-tsc` copies specifiers into the emitted `.d.ts` verbatim — it does not
   rewrite `.ts` to `.js` — so a `.ts` specifier ships broken to consumers. `check:exports`
   enforces it.
+- **No `.vue` specifier may reach `dist`.** `vue-tsc` emits `Foo.vue.d.ts` and copies
+  `./Foo.vue` specifiers through, and neither `tsc` nor `vue-tsc` can resolve one of those from a
+  published `.d.ts`. `scripts/normalize-sfc-declarations.ts` runs after the d.ts emit, renaming
+  `Foo.vue.d.ts` to `Foo.d.ts` (the declaration for the emitted `Foo.js`) and rewriting the
+  specifiers to `./Foo.js`. `check:exports` rejects any that survive.
 - **TypeScript is pinned to `^5.9`.** `vue-tsc` declares a `>=5.0.0` peer but breaks outright on
   TypeScript 7 (`ERR_PACKAGE_PATH_NOT_EXPORTED` from its internal `require.resolve` of
   `typescript/lib/...`). Do not bump until Volar/`vue-tsc` ship TS 7 support.

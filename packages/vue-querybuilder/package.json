@@ -49,7 +49,7 @@
     "postpack": "rm -f README.md",
     "build": "bun run build:main && bun run build:types && bun run build:css",
     "build:main": "vite build",
-    "build:types": "vue-tsc -p tsconfig.build.json --emitDeclarationOnly --declarationDir dist && find dist \\( -name '*.test.*' -o -name '*.test-d.*' -o -name '*.spec.*' \\) -delete",
+    "build:types": "vue-tsc -p tsconfig.build.json --emitDeclarationOnly --declarationDir dist && find dist \\( -name '*.test.*' -o -name '*.test-d.*' -o -name '*.spec.*' \\) -delete && bun ./scripts/normalize-sfc-declarations.ts",
     "build:css": "mkdir -p dist/styles && cp ../../node_modules/@react-querybuilder/core/dist/*.scss dist && cp ../../node_modules/@react-querybuilder/core/dist/styles/*.scss dist/styles && cp -f src/styles/*.scss dist/styles 2>/dev/null || true; bun sass --style=compressed dist",
     "check": "vue-tsc --noEmit -p tsconfig.json",
     "check:exports": "bun run ./scripts/check-dist-specifiers.ts && attw --pack . --profile esm-only",
