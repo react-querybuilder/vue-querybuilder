@@ -50,8 +50,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and greps for `document is not defined` / `window is not defined` / `ReferenceError`, which an
   SSR framework can render into a 200 response.
 - Root `check` fans out to the examples, so an example type error breaks CI.
-- Documentation: `README.md`, `docs/differences-from-react-querybuilder.md`, and
-  `docs/styling.md`.
+- Key-named scoped slots: for every key `x` of `controlElements` there is a slot `#x`, receiving
+  exactly the props that control element takes. Typed by `ControlSlots`, a mapped type over
+  `Controls`, so the slot list and its argument types cannot drift from the components they
+  replace. Slots and `controlElements` entries are interchangeable everywhere downstream.
+- `QueryBuilderContextProps.slots`, the prop form of the scoped slots, so slots inherit through
+  `provide` like every other configuration value.
+- Generic components: `QueryBuilder` (`RG`, `F`, `O`, `C`, all defaulted) and `Rule`/`RuleGroup`
+  (`F`, `O`), plus the `RuleTypeOf<RG>` helper.
+- Accessibility suite: axe over all seven conformance scenarios, run twice per case — WCAG
+  2.0/2.1 A+AA must be empty, best-practice must equal exactly `['label-title-only']` — plus
+  keyboard tests for rule-row tab order, Enter/Space activation, and not-toggle label
+  association.
+- Documentation: `README.md`, `docs/differences-from-react-querybuilder.md`,
+  `docs/customization.md`, and `docs/styling.md`.
 
 ### Changed (divergences from React Query Builder)
 
@@ -92,10 +104,26 @@ _The authoritative divergence list. Kept current at every step, not at the end._
   `ruleOrGroup` to establish a dependency.
 - **`RuleSubQuery` does not pass `enableDragAndDrop: false`** to the subquery's `useQueryBuilder`;
   the prop would be inert since `data-dnd` is hard-coded to `"disabled"`.
+- **Slots are the Vue-native customization point and win over `controlElements` at the same
+  level.** Per key: levels are tried props → context → defaults, and within a level the order is
+  keyed slot → keyed component → bulk slot → bulk component. `controlElements: { x: null }`
+  short-circuits at its own level, so it beats an inherited slot. Slot wrappers are cached by
+  slot identity, so a re-render never remounts the replaced subtree.
+- **`ControlSlots` and `ControlProps` are new types**; Vue exports no `ComponentProps` helper as
+  of 3.5, so `ControlProps` recovers a control's props from its `Component<P>`.
+- **A generic SFC's props parameter carries an index signature** (`Props & Record<string,
+unknown>` in `vue-tsc`'s emit), which matters only when a component is invoked through `h()`.
 - **Not ported:** UI-framework compatibility packages, `expr`/`datetime` UI, async option lists,
   deprecated props and aliases, `ruleGroupHeaderElements`/`ruleGroupBodyElements`, `DragHandle`.
 
 ### Known limitations
+
+- **`label-title-only` (axe best-practice) fires on every selector and text editor.** React Query
+  Builder labels those controls with `title` alone, and full DOM parity is a locked decision, so
+  an `aria-label` cannot be added without breaking the conformance harness. It is not a WCAG
+  failure — `title` does produce an accessible name — and consumers who need a visible label can
+  supply one through `controlElements` or a slot. The a11y suite asserts the best-practice
+  violation list equals exactly `['label-title-only']`, so any other regression still fails.
 
 - **Structural manager options are captured at construction.** Changing `fields`, `operators`,
   `combinators`, `baseField`/`baseOperator`/`baseCombinator`, the boolean flags, `maxLevels`,

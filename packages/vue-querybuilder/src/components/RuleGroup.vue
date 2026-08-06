@@ -1,4 +1,5 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="F extends FullOption = FullOption, O extends string = string">
+import type { FullOption } from '@react-querybuilder/core';
 import { TestID } from '@react-querybuilder/core';
 import { useRuleGroup } from '../composables/useRuleGroup.js';
 import type { RuleGroupProps } from '../types/props.js';
@@ -17,9 +18,15 @@ import RuleGroupHeader from './RuleGroupHeader.vue';
  */
 defineOptions({ name: 'RuleGroup' });
 
-const props = defineProps<RuleGroupProps>();
+const props = defineProps<RuleGroupProps<F, O>>();
 
-const parts = useRuleGroup(() => props);
+// The component is generic in `F`/`O`, but nothing downstream is: the resolvers on `schema` are
+// invariant in their option types. The type parameters are a consumer-facing convenience only,
+// so the props are widened to the default instantiation once, here. The cast preserves object
+// identity, so the reactive proxy is unchanged.
+const widenedProps = props as unknown as RuleGroupProps;
+
+const parts = useRuleGroup(() => widenedProps);
 
 const { ruleGroup, classNames, outerClassName, accessibleDescription } = parts;
 </script>
@@ -34,10 +41,10 @@ const { ruleGroup, classNames, outerClassName, accessibleDescription } = parts;
     :data-level="props.path.length"
     :data-path="JSON.stringify(props.path)">
     <div :class="classNames.header">
-      <RuleGroupHeader :groupProps="props" :parts="parts" />
+      <RuleGroupHeader :groupProps="widenedProps" :parts="parts" />
     </div>
     <div :class="classNames.body">
-      <RuleGroupBody :groupProps="props" :parts="parts" />
+      <RuleGroupBody :groupProps="widenedProps" :parts="parts" />
     </div>
   </div>
 </template>

@@ -95,6 +95,18 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
   common prop bag (`rule`, `rules`, `ruleOrGroup`, `fieldData`, ...) that most of them do not
   declare; without this those land on the DOM as stray attributes React never emits.
 
+### Slots
+
+- `slotToComponent` wraps a scoped slot in a functional component, cached in a `WeakMap` keyed by
+  slot identity. Component identity drives mount/unmount, so an uncached wrapper would remount
+  the whole replaced subtree. Template slots are identity-stable across parent re-renders;
+  render-function parents are the caller's problem, and the cache handles the repeated-call case.
+- Slots reach the merge as `props.slots` — `QueryBuilder.vue` folds `useSlots()` into the props
+  object it hands `useQueryBuilder`, so slots merge through the same path as `controlElements`
+  and inherit through `provide`.
+- Resolution order per key: levels props → context → defaults; within a level, keyed slot → keyed
+  component → bulk slot → bulk component. A `null` entry short-circuits at its own level.
+
 ### Reactivity
 
 - The query is a `shallowRef`. A deep proxy defeats reference comparisons and is rejected by the manager's Immer deep-freeze.
@@ -125,6 +137,11 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
   for TS modules. `vue-tsc` copies specifiers into the emitted `.d.ts` verbatim — it does not
   rewrite `.ts` to `.js` — so a `.ts` specifier ships broken to consumers. `check:exports`
   enforces it.
+- **A generic SFC's props parameter carries an index signature.** `vue-tsc` types it as
+  `Props & Record<string, unknown>`, so an interface-typed variable is not assignable when the
+  component is invoked through `h()` — which is how the unit suites render `Rule`/`RuleGroup`.
+  The `ruleProps`/`ruleGroupProps` test helpers return `Props & Record<string, unknown>` for that
+  reason. Templates are unaffected.
 - **No `.vue` specifier may reach `dist`.** `vue-tsc` emits `Foo.vue.d.ts` and copies
   `./Foo.vue` specifiers through, and neither `tsc` nor `vue-tsc` can resolve one of those from a
   published `.d.ts`. `scripts/normalize-sfc-declarations.ts` runs after the d.ts emit, renaming
@@ -147,7 +164,11 @@ friends) is per-instance. Drop the override once `@testing-library/vue` moves to
 it, record that it went red, then revert. A gate that cannot fail is worse than none.
 
 Current gates: `fmt:check`, `build`, `check` (library + examples), `check:exports`, `lint`,
-`test:coverage` (three thresholds), `conformance` (DOM parity, 232 tests), `test:ssr`.
+`test:coverage` (three thresholds), `conformance` (DOM parity, 232 tests), `test:ssr`, and the
+a11y suite (`src/components/a11y.test.ts`, part of the default run).
+
+The a11y gate is proven red by removing the `title` binding from `ValueSelector.vue`, which turns
+all eight axe cases red.
 
 The SSR gate is proven red by injecting a DOM access (`document.title = '…'`) into
 `QueryBuilder.vue`'s `<script setup>`, rebuilding, and confirming HTTP 500 and a non-zero exit.

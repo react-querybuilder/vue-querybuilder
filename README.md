@@ -84,6 +84,7 @@ Two prebuilt stylesheets ship in `dist`: `query-builder.css` (full) and
 ## Documentation
 
 - [Differences from React Query Builder](./docs/differences-from-react-querybuilder.md)
+- [Customization](./docs/customization.md)
 - [Styling](./docs/styling.md)
 
 ## Examples

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="F extends string = string, O extends string = string">
 import { TestID } from '@react-querybuilder/core';
 import { useRule } from '../composables/useRule.js';
 import type { RuleProps } from '../types/props.js';
@@ -15,9 +15,15 @@ import RuleSubQuery from './RuleSubQuery.vue';
  */
 defineOptions({ name: 'Rule' });
 
-const props = defineProps<RuleProps>();
+const props = defineProps<RuleProps<F, O>>();
 
-const parts = useRule(() => props);
+// The component is generic in `F`/`O`, but nothing downstream is: the resolvers on `schema` are
+// invariant in their option types. The type parameters are a consumer-facing convenience only,
+// so the props are widened to the default instantiation once, here. The cast preserves object
+// identity, so the reactive proxy is unchanged.
+const widenedProps = props as unknown as RuleProps;
+
+const parts = useRule(() => widenedProps);
 
 const { outerClassName, hasSubQuery } = parts;
 </script>
@@ -29,7 +35,7 @@ const { outerClassName, hasSubQuery } = parts;
     :data-rule-id="props.id"
     :data-level="props.path.length"
     :data-path="JSON.stringify(props.path)">
-    <RuleSubQuery v-if="hasSubQuery" :ruleProps="props" :parts="parts" />
-    <RuleComponents v-else :ruleProps="props" :parts="parts" />
+    <RuleSubQuery v-if="hasSubQuery" :ruleProps="widenedProps" :parts="parts" />
+    <RuleComponents v-else :ruleProps="widenedProps" :parts="parts" />
   </div>
 </template>

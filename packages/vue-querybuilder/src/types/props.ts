@@ -38,7 +38,7 @@ import type {
   ValueSources,
 } from '@react-querybuilder/core';
 import type { Component } from 'vue';
-import type { ControlElementsProp } from './controls.js';
+import type { ControlElementsProp, ControlSlots } from './controls.js';
 import type { Schema } from './schema.js';
 import type { LabelNode, Translations, TranslationWithLabel } from './translations.js';
 
@@ -411,6 +411,17 @@ export interface QueryBuilderContextProps<
    */
   controlElements?: ControlElementsProp<F, O>;
   /**
+   * Slot-based replacements for the components in {@link ControlElementsProp}.
+   *
+   * `QueryBuilder` populates this from its own scoped slots, so a consumer writes
+   * `<template #valueEditor="props">` rather than passing this prop directly. It lives here,
+   * rather than on `QueryBuilderProps` alone, so that slots supplied to a context provider are
+   * inherited the same way every other configuration value is.
+   *
+   * Within one level, a slot takes precedence over the matching `controlElements` entry.
+   */
+  slots?: ControlSlots<F, O>;
+  /**
    * This can be used to assign specific CSS classes to various controls
    * that are rendered by `QueryBuilder`.
    */
@@ -421,6 +432,22 @@ export interface QueryBuilderContextProps<
    */
   translations?: Partial<Translations>;
 }
+
+/**
+ * The rule type of a query type: the `R` in `RuleGroupType<R>`/`RuleGroupTypeIC<R>`.
+ *
+ * `QueryBuilder` is generic in `RG`, `F`, `O`, and `C` only — the rule type is not an
+ * independent parameter, it is determined by the query. This recovers it, so the component can
+ * declare its props with {@link QueryBuilderPropsBase} (which takes `R` explicitly) while
+ * consumers still see the same type {@link QueryBuilderProps} gives them.
+ *
+ * @group Props
+ */
+export type RuleTypeOf<RG extends RuleGroupTypeAny> = RG extends
+  | RuleGroupType<infer R>
+  | RuleGroupTypeIC<infer R>
+  ? R
+  : RuleType;
 
 /**
  * The body of {@link QueryBuilderProps}, with the rule type `R` supplied explicitly rather than

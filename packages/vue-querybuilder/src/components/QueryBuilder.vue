@@ -1,10 +1,26 @@
-<script setup lang="ts">
-import type { RuleGroupType, RuleGroupTypeAny, RuleType } from '@react-querybuilder/core';
+<script
+  setup
+  lang="ts"
+  generic="
+    RG extends RuleGroupTypeAny = RuleGroupType,
+    F extends FullField = FullField,
+    O extends FullOperator = FullOperator,
+    C extends FullCombinator = FullCombinator
+  ">
+import type {
+  FullCombinator,
+  FullField,
+  FullOperator,
+  GetOptionIdentifierType,
+  RuleGroupType,
+  RuleGroupTypeAny,
+} from '@react-querybuilder/core';
 import { rootPath } from '@react-querybuilder/core';
-import { computed } from 'vue';
+import { computed, useSlots } from 'vue';
 import { provideQueryBuilderContext } from '../composables/context.js';
 import { useQueryBuilder } from '../composables/useQueryBuilder.js';
-import type { QueryBuilderPropsBase } from '../types/props.js';
+import type { ControlSlots } from '../types/controls.js';
+import type { QueryBuilderProps, QueryBuilderPropsBase, RuleTypeOf } from '../types/props.js';
 import { defaultControlElements } from './defaultControlElements.js';
 
 /**
@@ -31,7 +47,7 @@ import { defaultControlElements } from './defaultControlElements.js';
  */
 defineOptions({ name: 'QueryBuilder' });
 
-const props = withDefaults(defineProps<QueryBuilderPropsBase<RuleGroupType, RuleType>>(), {
+const props = withDefaults(defineProps<QueryBuilderPropsBase<RG, RuleTypeOf<RG>, F, O, C>>(), {
   disabled: undefined,
   parseNumbers: undefined,
   enableMountQueryChange: undefined,
@@ -55,12 +71,31 @@ const props = withDefaults(defineProps<QueryBuilderPropsBase<RuleGroupType, Rule
 
 const emit = defineEmits<{
   /** Emitted with each committed query, after `onQueryChange`. Enables `v-model:query`. */
-  'update:query': [query: RuleGroupType];
+  'update:query': [query: RG];
 }>();
 
-const state = useQueryBuilder(() => props, {
-  defaultControls: defaultControlElements,
-  writeBack: query => emit('update:query', query as RuleGroupType),
+/**
+ * One scoped slot per control element key. The slot props are exactly the props the
+ * corresponding component would have received.
+ */
+defineSlots<ControlSlots<F, GetOptionIdentifierType<O>>>();
+
+const slots = useSlots();
+
+// Slots are folded into the props object rather than passed separately, so that they merge
+// through exactly the same path as `controlElements` and are inherited through `provide`. An
+// explicitly passed `slots` prop wins over a template slot of the same name.
+const getProps = (): QueryBuilderProps<RuleGroupTypeAny, F, O, FullCombinator> =>
+  ({ ...props, slots: { ...slots, ...props.slots } }) as unknown as QueryBuilderProps<
+    RuleGroupTypeAny,
+    F,
+    O,
+    FullCombinator
+  >;
+
+const state = useQueryBuilder<F, O>(getProps, {
+  defaultControls: defaultControlElements as never,
+  writeBack: query => emit('update:query', query as RG),
 });
 
 provideQueryBuilderContext(state.context);

@@ -126,8 +126,48 @@ Configuration inherits through `provide`/`inject` rather than React context. Cal
 `translations`, and the display flags for every `QueryBuilder` beneath it; per-instance props win
 over inherited values, key by key.
 
-> Key-named scoped slots are an additional customization mechanism. This section is completed when
-> they land; see `docs/customization.md`.
+### Slots
+
+Key-named scoped slots are the Vue-native alternative. For every key `x` of `controlElements`
+there is a slot `#x`, whose slot props are exactly the props that control element receives:
+
+```vue
+<QueryBuilder :fields="fields" v-model:query="query">
+  <template #addRuleAction="{ label, handleOnClick }">
+    <button type="button" @click="handleOnClick">{{ label }}</button>
+  </template>
+</QueryBuilder>
+```
+
+Slots and `controlElements` entries are interchangeable everywhere downstream: a slot is adapted
+to a component by an internal functional wrapper, cached by slot identity so that a re-render
+never remounts the subtree.
+
+**Resolution order**, applied per key independently:
+
+1. **Levels**, in order: props → inherited context → package defaults.
+2. **Within a level**: keyed slot → keyed component → bulk slot → bulk component.
+
+Consequences worth spelling out:
+
+- A slot passed to `QueryBuilder` beats a component inherited from context, and a slot supplied
+  to a context provider beats a component from a further-out provider — but a component passed
+  directly to `QueryBuilder` beats an inherited slot, because levels are tried before sources.
+- `controlElements: { x: null }` short-circuits at its own level, so it renders nothing even when
+  an outer provider supplies an `#x` slot.
+- Bulk sources are `actionElement` (keys ending `Action`/`Actions`) and `valueSelector` (keys
+  ending `Selector`). They never apply to `valueEditor`, `rule`, `ruleGroup`, `inlineCombinator`,
+  `notToggle`, or `matchModeEditor`.
+
+Because slots must be inheritable, they also have a prop form: `QueryBuilderContextProps.slots`,
+a `Partial<ControlSlots>`. `QueryBuilder` populates it from its own scoped slots, so passing it
+by hand is only necessary when forwarding slots through a context provider. An explicit `slots`
+prop wins over a template slot of the same name.
+
+There is no `null` form for a slot. Omit it to fall through, or use `controlElements: { x: null }`
+to render nothing.
+
+See [`customization.md`](./customization.md) for worked examples.
 
 ## 6. Type-level differences
 
@@ -155,8 +195,19 @@ Additional deltas:
   which is always `"disabled"`.
 - **`ValueEditorProps.skipHook` keeps its name** but now refers to the value-editor reset
   _watcher_ rather than a React hook.
-- `ControlSlots`, the mapped type over `Controls` that types the scoped slots, arrives with the
-  slots themselves.
+- **`ControlSlots`** is a mapped type over `Controls`: for every key `K`, a
+  `Slot<ControlProps<Controls[K]>>`. The slot list and its argument types therefore cannot drift
+  from the components the slots replace. `QueryBuilderContextProps.slots` carries it.
+- **`RuleTypeOf<RG>`** recovers the rule type from a query type. `QueryBuilder` is generic in
+  `RG`, `F`, `O`, and `C` only — the rule type is determined by the query, not chosen
+  independently — so the component uses this to fill `QueryBuilderPropsBase`'s explicit `R`.
+- **`Rule` and `RuleGroup` are generic too** (`F`/`O`), matching React. The parameters are a
+  consumer-facing convenience; internally the props are widened to the default instantiation,
+  because `Schema`'s resolvers are invariant in their option types.
+- **A generic SFC's props parameter carries an index signature.** `vue-tsc` types it as
+  `Props & Record<string, unknown>`, so an interface-typed variable is not directly assignable
+  when the component is invoked through `h()`. Spread it, or add the index signature. Templates
+  are unaffected.
 
 ## 7. Reactivity
 

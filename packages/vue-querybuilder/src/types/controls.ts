@@ -1,5 +1,5 @@
 import type { FullField } from '@react-querybuilder/core';
-import type { Component } from 'vue';
+import type { Component, Slot } from 'vue';
 import type {
   ActionProps,
   CombinatorSelectorProps,
@@ -189,3 +189,31 @@ export type Controls<F extends FullField, O extends string> = {
     Required<ControlElementsProp<F, O>>[K]
   >;
 };
+
+/**
+ * The props a {@link Controls} entry accepts.
+ *
+ * Vue does not export a `ComponentProps` helper as of 3.5, so this recovers the type argument
+ * from the `Component<P>` the entry is declared as.
+ */
+export type ControlProps<C> = C extends Component<infer P> ? P : never;
+
+/**
+ * Slot-based alternatives to {@link ControlElementsProp}.
+ *
+ * Every control element key `x` has a matching scoped slot `#x`, whose slot props are exactly
+ * the props the corresponding component would have received. Slots take precedence over
+ * `controlElements` at the same level (see `mergeControlElements`), so a `#valueEditor` slot
+ * wins over `controlElements.valueEditor`.
+ *
+ * There is no `null` form: omit the slot to fall through to the next source, or pass
+ * `controlElements: { x: null }` to render nothing.
+ *
+ * A mapped type over {@link Controls}, so the slot list and the slot argument types cannot
+ * drift from the components they replace.
+ *
+ * @group Props
+ */
+export type ControlSlots<F extends FullField, O extends string> = Partial<{
+  [K in keyof Controls<F, O>]: Slot<ControlProps<Controls<F, O>[K]>>;
+}>;

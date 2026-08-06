@@ -80,13 +80,6 @@ const queryIC = ref<RuleGroupTypeIC>({
 
 const independentCombinators = ref(false);
 
-// `QueryBuilder` is generic in the query type only from step 7 onward; until then its props are
-// declared for `RuleGroupType`, so an independent-combinators query needs a cast at the binding.
-const queryICAsAny = computed(() => queryIC.value as unknown as RuleGroupType);
-const onQueryICUpdate = (next: RuleGroupType) => {
-  queryIC.value = next as unknown as RuleGroupTypeIC;
-};
-
 const flags = ref({
   showCombinatorsBetweenRules: false,
   showNotToggle: true,
@@ -134,12 +127,13 @@ const output = computed(() => formatQuery(activeQuery.value, format.value));
 
   <div class="demo-layout">
     <div>
+      <!-- `QueryBuilder` is generic in the query type, so an independent-combinators query
+           binds directly, with no cast. -->
       <QueryBuilder
         v-if="independentCombinators"
+        v-model:query="queryIC"
         :fields="fields"
-        :query="queryICAsAny"
-        v-bind="flags"
-        @update:query="onQueryICUpdate" />
+        v-bind="flags" />
       <QueryBuilder v-else v-model:query="query" :fields="fields" v-bind="flags" />
     </div>
 

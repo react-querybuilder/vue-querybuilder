@@ -11,9 +11,10 @@ import {
   preferFlagProps,
   preferProp,
 } from '@react-querybuilder/core';
-import type { Component, ComputedRef, InjectionKey, MaybeRefOrGetter } from 'vue';
+import type { Component, ComputedRef, InjectionKey, MaybeRefOrGetter, Slot } from 'vue';
 import { computed, getCurrentInstance, inject, provide, toValue } from 'vue';
-import type { ControlElementsProp, Controls } from '../types/controls.js';
+import { slotToComponent } from '../internal/slotToComponent.js';
+import type { ControlElementsProp, Controls, ControlSlots } from '../types/controls.js';
 import type { QueryBuilderContextProps } from '../types/props.js';
 import type { Translations, TranslationsFull } from '../types/translations.js';
 
@@ -121,7 +122,20 @@ export const controlKeys = [
 ] as const satisfies readonly (keyof Controls<FullField, string>)[];
 
 /**
- * Merges `controlElements` from props, context, and defaults, giving precedence to props.
+ * The wrapped component for a named slot, or `undefined` if that slot is absent.
+ */
+const slotFor = <F extends FullField, O extends string>(
+  source: ControlSlots<F, O>,
+  slotKey: string
+  // oxlint-disable-next-line typescript/no-explicit-any
+): Component<any> | undefined => {
+  const slot = (source as Record<string, Slot | undefined>)[slotKey];
+  return slot ? slotToComponent(slot as Slot<Record<string, unknown>>) : undefined;
+};
+
+/**
+ * Merges `controlElements` and slots from props, context, and defaults, giving precedence to
+ * props.
  *
  * Mirrors React Query Builder's `useMergedContext`: a `null` entry resolves to
  * {@link nullComponent} (rendering nothing), `actionElement` is a bulk override for every
@@ -129,18 +143,20 @@ export const controlKeys = [
  * Bulk overrides never apply to `valueEditor`, `rule`, `ruleGroup`, `inlineCombinator`,
  * `notToggle`, or `matchModeEditor`.
  *
- * A `null` entry short-circuits at its own level, so it beats a component inherited from
- * context as well as a bulk override at the same level.
+ * Slots are the Vue-native customization point and are resolved first. Within a level the order
+ * is: keyed slot, keyed component, bulk slot, bulk component. Levels are then tried in order —
+ * props, context, defaults — so a slot passed to `QueryBuilder` beats a component inherited from
+ * context, and a `null` entry short-circuits at its own level, beating an inherited slot.
  *
  * Defaults are a parameter rather than an import so that this module — and the composable layer
  * as a whole — stays free of component imports.
- *
- * Slot-based customization is layered on top of this in step 7.
  */
 export const mergeControlElements = <F extends FullField, O extends string>(
   propsCE: ControlElementsProp<F, O> = emptyObject,
   contextCE: ControlElementsProp<F, O> = emptyObject,
-  defaults: Partial<Controls<F, O>> = emptyObject
+  defaults: Partial<Controls<F, O>> = emptyObject,
+  propsSlots: ControlSlots<F, O> = emptyObject,
+  contextSlots: ControlSlots<F, O> = emptyObject
 ): Controls<F, O> => {
   const merged: Record<string, unknown> = {};
 
@@ -149,11 +165,22 @@ export const mergeControlElements = <F extends FullField, O extends string>(
      * Resolves one level (props or context) to a component, {@link nullComponent}, or
      * `undefined` meaning "fall through to the next level".
      */
-    // oxlint-disable-next-line typescript/no-explicit-any
-    const resolveLevel = (ce: ControlElementsProp<F, O>): Component<any> | undefined => {
+    const resolveLevel = (
+      ce: ControlElementsProp<F, O>,
+      sl: ControlSlots<F, O>
+      // oxlint-disable-next-line typescript/no-explicit-any
+    ): Component<any> | undefined => {
+      const keyed = slotFor(sl, key);
+      if (keyed) return keyed;
+
       const comp = ce[key];
       if (comp === null) return nullComponent;
       if (comp) return comp;
+
+      const bulkSlot =
+        (isActionKey(key) ? slotFor(sl, 'actionElement') : undefined) ??
+        (isSelectorKey(key) ? slotFor(sl, 'valueSelector') : undefined);
+      if (bulkSlot) return bulkSlot;
 
       return (
         (isActionKey(key) ? ce.actionElement : undefined) ??
@@ -161,7 +188,8 @@ export const mergeControlElements = <F extends FullField, O extends string>(
       );
     };
 
-    const comp = resolveLevel(propsCE) ?? resolveLevel(contextCE) ?? defaults[key];
+    const comp =
+      resolveLevel(propsCE, propsSlots) ?? resolveLevel(contextCE, contextSlots) ?? defaults[key];
 
     if (comp) merged[key] = comp;
   }
@@ -220,7 +248,9 @@ export const mergeQueryBuilderConfig = <F extends FullField, O extends string>({
     controls: mergeControlElements(
       props.controlElements,
       context?.controlElements,
-      defaultControls
+      defaultControls,
+      props.slots,
+      context?.slots
     ),
     translations: mergeTranslations(props.translations, context?.translations),
   };

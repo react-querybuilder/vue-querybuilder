@@ -18,7 +18,7 @@ import ValueSelector from './ValueSelector.vue';
  * the defaults supply a component, so every one of the 24 keys must have an entry here. As of
  * milestone B every key resolves to a real component; none maps to `nullComponent`.
  */
-export const defaultControlElements: Controls<FullField, string> = {
+export const defaultControlElements = {
   actionElement: ActionElement,
   addGroupAction: ActionElement,
   addRuleAction: ActionElement,
@@ -43,4 +43,7 @@ export const defaultControlElements: Controls<FullField, string> = {
   valueEditor: ValueEditor,
   valueSelector: ValueSelector,
   valueSourceSelector: ValueSelector,
-} as Controls<FullField, string>;
+  // `Rule` and `RuleGroup` are generic components, whose emitted type is a generic function
+  // rather than a plain `Component<P>`; a direct assignment is not comparable in either
+  // direction, so the assertion goes through `unknown`.
+} as unknown as Controls<FullField, string>;

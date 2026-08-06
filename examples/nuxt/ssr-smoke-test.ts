@@ -56,7 +56,9 @@ const assertions: [name: string, needle: string][] = [
   ['rule-group testID', 'data-testid="rule-group"'],
   ['rule testID', 'data-testid="rule"'],
   ['inline-combinator testID', 'data-testid="inline-combinator"'],
-  ['custom control label', 'Custom Add Rule'],
+  // Rendered from a `#addRuleAction` scoped slot, so this also gates `slotToComponent`'s
+  // server path.
+  ['slot-rendered control label', 'Custom Add Rule'],
   ['server-side formatQuery output', escapeHtml(expectedSql)],
 ];
 

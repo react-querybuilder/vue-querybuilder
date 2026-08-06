@@ -1,4 +1,4 @@
-import type { RuleGroupType } from '@react-querybuilder/core';
+import type { RuleGroupType, RuleGroupTypeAny } from '@react-querybuilder/core';
 import { defaultCombinators } from '@react-querybuilder/core';
 import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/vue';
@@ -112,8 +112,10 @@ describe('QueryBuilder', () => {
           h(QueryBuilder, {
             fields: testFields,
             query: query.value,
-            'onUpdate:query': (q: RuleGroupType) => {
-              query.value = q;
+            // `h()` cannot infer a generic component's type parameters, so the emit signature
+            // falls back to the constraint.
+            'onUpdate:query': (q: RuleGroupTypeAny) => {
+              query.value = q as RuleGroupType;
             },
           }),
           h('output', {}, `${query.value.rules.length}`),

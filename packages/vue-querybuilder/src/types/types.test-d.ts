@@ -10,13 +10,16 @@ import type {
   RuleGroupType,
   RuleGroupTypeAny,
   RuleGroupTypeIC,
+  RuleType,
 } from '@react-querybuilder/core';
-import type { Component } from 'vue';
+import type { Component, Slot } from 'vue';
 import type {
   ActionProps,
   ControlElementsProp,
+  ControlSlots,
   Controls,
   LabelNode,
+  QueryBuilderContextProps,
   QueryBuilderProps,
   RuleGroupProps,
   RuleProps,
@@ -25,6 +28,7 @@ import type {
   SimpleQueryBuilderProps,
   SimpleQueryBuilderPropsIC,
   SimpleRuleGroupProps,
+  RuleTypeOf,
   SimpleRuleProps,
   Translations,
   ValueEditorProps,
@@ -145,4 +149,29 @@ assertType<SimpleRuleProps>(ruleProps);
 assertType<SimpleRuleGroupProps>(ruleGroupProps);
 // @ts-expect-error the aliases are not interchangeable
 assertType<SimpleQueryBuilderPropsIC>(stdProps);
+// #endregion
+
+// #region Control slots
+declare const slots: ControlSlots<FullField, string>;
+// Slot arguments are exactly the props the replaced component receives.
+assertType<Slot<ValueEditorProps<FullField, string>> | undefined>(slots.valueEditor);
+assertType<Slot<ActionProps> | undefined>(slots.actionElement);
+assertType<Slot<RuleGroupProps<FullField, string>> | undefined>(slots.ruleGroup);
+// @ts-expect-error drag-and-drop is not part of this port, so there is no `dragHandle` slot
+assertType<unknown>(slots.dragHandle);
+// @ts-expect-error slot keys are bare control keys, not suffixed
+assertType<unknown>(slots.valueEditorSlot);
+// There is no `null` form: omit the slot, or pass `controlElements: { x: null }`.
+// @ts-expect-error
+slots.valueEditor = null;
+
+// Slots are inherited through context, so they live on `QueryBuilderContextProps`.
+declare const contextProps: QueryBuilderContextProps;
+assertType<ControlSlots<FullField, string> | undefined>(contextProps.slots);
+assertType<ControlSlots<FullField, string> | undefined>(stdProps.slots);
+// #endregion
+
+// #region Rule type derivation
+assertType<RuleType>(null as unknown as RuleTypeOf<RuleGroupType>);
+assertType<RuleType>(null as unknown as RuleTypeOf<RuleGroupTypeIC>);
 // #endregion

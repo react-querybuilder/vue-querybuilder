@@ -96,7 +96,9 @@ export const ruleProps = (
   state: any,
   rule: RuleType,
   overrides: Partial<RuleProps> = {}
-): RuleProps => ({
+  // The index signature is what a generic SFC's props parameter requires: `vue-tsc` types it as
+  // `Props & Record<string, unknown>`, and an interface has no index signature of its own.
+): RuleProps & Record<string, unknown> => ({
   rule,
   path: [0],
   schema: state.schema.value,
@@ -111,7 +113,8 @@ export const ruleGroupProps = (
   state: any,
   ruleGroup: RuleGroupTypeAny,
   overrides: Partial<RuleGroupProps> = {}
-): RuleGroupProps => ({
+  // See `ruleProps`.
+): RuleGroupProps & Record<string, unknown> => ({
   ruleGroup,
   path: [],
   schema: state.schema.value,

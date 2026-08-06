@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { QueryBuilder, type RuleGroupType } from 'vue-querybuilder';
+import { QueryBuilder } from 'vue-querybuilder';
 import CustomAddRuleAction from '../components/CustomAddRuleAction.vue';
 import { fields, query as initialQuery } from '#shared/query';
 
-// `QueryBuilder` becomes generic in the query type at step 7; until then its props are declared
-// for `RuleGroupType`, so an independent-combinators query needs a cast at the binding.
-const query = ref(initialQuery as unknown as RuleGroupType);
-
-// A consumer-supplied control. Step 7 moves this to a `#addRuleAction` slot.
-const controlElements = { addRuleAction: CustomAddRuleAction };
+// `QueryBuilder` is generic in the query type, so this independent-combinators query binds with
+// no cast.
+const query = ref(initialQuery);
 
 const { data } = await useFetch('/api/sql');
 </script>
@@ -17,7 +14,13 @@ const { data } = await useFetch('/api/sql');
 <template>
   <main>
     <h1>vue-querybuilder — Nuxt SSR</h1>
-    <QueryBuilder v-model:query="query" :fields="fields" :control-elements="controlElements" />
+    <!-- The consumer-supplied control goes through a scoped slot, so the SSR gate exercises
+         `slotToComponent`'s server path. -->
+    <QueryBuilder v-model:query="query" :fields="fields">
+      <template #addRuleAction="props">
+        <CustomAddRuleAction v-bind="props" />
+      </template>
+    </QueryBuilder>
     <pre data-testid="server-sql">{{ data?.sql }}</pre>
   </main>
 </template>
