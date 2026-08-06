@@ -60,6 +60,10 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
 - Always `toRaw()` a query before handing it to the manager.
 - Effects that write back into state use `watch` with an **explicit dependency array** and
   `flush: 'post'` — never `watchEffect`, whose tracked set changes across branches.
+- Never pair `immediate: true` with `flush: 'post'`. Vue runs an immediate callback
+  _synchronously at watch creation_, ignoring the flush setting, which would apply a write before
+  first render and break DOM parity. Defer the mount-time run with `nextTick` instead, guarded by
+  an `onScopeDispose` flag.
 
 ### Types
 
@@ -92,9 +96,15 @@ Coverage is configured in the **root** `vitest.config.ts`. A `coverage` block in
 `vite.config.ts` is silently ignored when the suite runs through `test.projects`, which is how CI
 runs it.
 
-⚠️ Until `src/` contains executable code (step 2), v8 reports `0/0` lines and the threshold
-**passes vacuously**. It was proven red at step 1 by temporarily adding an uncovered function
-body with `thresholds.lines: 99`. Re-confirm the gate is non-vacuous once real source lands.
+Two thresholds: 80% lines globally, and **90% lines over `packages/*/src/composables/**`** — the
+reactive layer is load-bearing and has no DOM to backstop it.
+
+Both were proven red at step 3 (raised to 100, confirmed the error, reverted). The step-1 vacuity
+hazard is discharged: `src/` now holds real executable code, so v8 no longer reports `0/0` and the
+threshold no longer passes trivially.
+
+Test helpers belong in `packages/vue-querybuilder/test/`, not `src/` — anything under `src/` is
+both built into `dist` and counted against coverage.
 
 ## Generated / fetched files
 
