@@ -66,7 +66,10 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
 - `ReactNode` → `LabelNode` (`VNodeChild | string`); titles stay `string`.
 - `ComponentType<P>` → Vue's `Component<P>`.
 - Use `import type` for type-only imports (`verbatimModuleSyntax` is on).
-- Relative imports must carry explicit extensions; `check:exports` enforces it.
+- Relative imports must carry explicit extensions, and the extension must be `.js` (not `.ts`)
+  for TS modules. `vue-tsc` copies specifiers into the emitted `.d.ts` verbatim — it does not
+  rewrite `.ts` to `.js` — so a `.ts` specifier ships broken to consumers. `check:exports`
+  enforces it.
 - **TypeScript is pinned to `^5.9`.** `vue-tsc` declares a `>=5.0.0` peer but breaks outright on
   TypeScript 7 (`ERR_PACKAGE_PATH_NOT_EXPORTED` from its internal `require.resolve` of
   `typescript/lib/...`). Do not bump until Volar/`vue-tsc` ship TS 7 support.

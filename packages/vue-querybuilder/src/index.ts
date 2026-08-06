@@ -1,8 +1,9 @@
 /**
  * Public entry point for `vue-querybuilder`.
  *
- * Components, composables, and types land in steps 2-7. Until then this barrel re-exports
- * `@react-querybuilder/core` so that consumers never need a direct dependency on core, and so
- * that the build, declaration emit, and `check:exports` gates all have real output to inspect.
+ * Components and composables land in steps 3-7. The type layer lands in step 2, alongside a
+ * verbatim re-export of `@react-querybuilder/core` so that consumers never need a direct
+ * dependency on core.
  */
 export * from '@react-querybuilder/core';
+export type * from './types/index.js';

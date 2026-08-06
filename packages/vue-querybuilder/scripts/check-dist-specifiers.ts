@@ -26,10 +26,22 @@ const RESOLVABLE = ['.js', '.vue', '.css', '.scss', '.json'];
 
 const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*)(['"])(\.\.?\/[^'"]*)\1/g;
 
-/** `vue-tsc` emits `Foo.vue.d.ts` for `Foo.vue`, so a `./Foo.vue` specifier resolves to either. */
+/**
+ * `vue-tsc` emits `Foo.vue.d.ts` for `Foo.vue`, so a `./Foo.vue` specifier resolves to either.
+ *
+ * A `./foo.js` specifier in a `.d.ts` file may also legitimately resolve to a sibling `foo.d.ts`
+ * with no `foo.js` alongside it: that is what a type-only module looks like after the bundler
+ * erases it. TypeScript resolves the specifier through the declaration file, and the import
+ * itself never exists at runtime.
+ */
 const resolvesTo = (from: string, spec: string): boolean => {
   const abs = resolve(dirname(from), spec);
-  return existsSync(abs) || (spec.endsWith('.vue') && existsSync(`${abs}.d.ts`));
+  if (existsSync(abs)) return true;
+  if (spec.endsWith('.vue')) return existsSync(`${abs}.d.ts`);
+  if (from.endsWith('.d.ts') && spec.endsWith('.js')) {
+    return existsSync(abs.replace(/\.js$/, '.d.ts'));
+  }
+  return false;
 };
 
 const failures: string[] = [];
