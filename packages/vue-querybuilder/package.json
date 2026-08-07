@@ -61,7 +61,7 @@
     "vue": "^3.5"
   },
   "dependencies": {
-    "@react-querybuilder/core": "^8.22.2"
+    "@react-querybuilder/core": "^8.22.3"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

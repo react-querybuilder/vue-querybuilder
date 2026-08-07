@@ -242,12 +242,15 @@ Notes:
 
 ## 8. Known behavioral notes
 
-- **Structural manager options are captured when the manager is constructed.** Changing `fields`,
-  `operators`, `combinators`, `baseField`/`baseOperator`/`baseCombinator`, the boolean flags,
-  `maxLevels`, `disabledPaths`, `validator`, or `idGenerator` after mount updates _rendering_ but
-  not the manager's own defaults or its prepared option lists. Function props (`getOperators`,
-  `getValues`, `getDefaultValue`, …) are forwarded through closures and do stay live.
-  Recreating the manager would discard undo history, so this is deliberate.
+- **Structural manager options are applied in place.** Changing `fields`, `operators`,
+  `combinators`, `baseField`/`baseOperator`/`baseCombinator`, the boolean flags, `maxLevels`,
+  `disabledPaths`, `validator`, or `idGenerator` after mount re-applies them to the existing
+  manager through `QueryManager#reconfigure`, so the query, the undo/redo history, and every
+  subscriber survive. Function props (`getOperators`, `getValues`, `getDefaultValue`, …) are
+  forwarded through closures and stay live without any reconfiguration at all. An externally
+  supplied `manager` prop is never reconfigured — that manager belongs to the consumer. The
+  watcher runs at `flush: 'post'` and is gated by a structural deep compare, so a props object
+  rebuilt on every render does not retrigger it.
 - **`ValueSelector` drives a multi-select through each `<option>`'s `selected` attribute**, not a
   `value` binding, which Vue would stringify into a cleared selection. Rendered DOM is unchanged.
 - **Every default control sets `inheritAttrs: false`.** `Rule` and `RuleGroup` hand each

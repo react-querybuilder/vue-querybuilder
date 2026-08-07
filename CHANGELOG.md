@@ -7,6 +7,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Structural manager options are now reactive. `fields`, `operators`, `combinators`,
+  `baseField`/`baseOperator`/`baseCombinator`, `translations`, `maxLevels`, `disabled`, the
+  `autoSelect*`/`resetOn*`/`listsAsArrays`/`addRuleToNewGroups` flags, `validator`, and
+  `idGenerator` are re-applied to the existing `QueryManager` with `QueryManager#reconfigure`
+  whenever they change, instead of being captured once at construction. This is a behavior
+  change for anyone who relied on the documented freeze; there is no opt-out.
+- An externally supplied `manager` prop is never reconfigured. That manager belongs to the
+  consumer, so the pass-through path stays pure.
+- Bumped `@react-querybuilder/core` to `^8.22.3` for `QueryManager#reconfigure`.
+
+### Fixed
+
+- The query, the undo/redo history, and every manager subscriber now survive a configuration
+  change: nothing is recreated, so `canUndo`/`canRedo` and pending history entries are
+  preserved.
+- Placeholder options now track `translations` after mount, converging the manager's prepared
+  option lists with the reactive config path.
+- A sub-query builder now picks up changed `subproperties` without a remount.
+- `onQueryChange` (and `update:query`) no longer fire for a configuration-only change.
+- `getDefaultField` is now forwarded through the same live-closure path as every other function
+  prop, matching `getDefaultOperator`.
+
 ## [0.2.0] - 2026-08-06
 
 ### Changed
@@ -140,7 +164,7 @@ unknown>` in `vue-tsc`'s emit), which matters only when a component is invoked t
   `combinators`, `baseField`/`baseOperator`/`baseCombinator`, the boolean flags, `maxLevels`,
   `disabledPaths`, `validator`, or `idGenerator` after mount updates rendering but not the
   manager's own defaults or prepared option lists. Function props are forwarded through closures
-  and do stay live. Recreating the manager would discard undo history.
+  and do stay live. _Superseded: those options are now applied in place — see Unreleased._
 
 [unreleased]: https://github.com/react-querybuilder/vue-querybuilder/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/react-querybuilder/vue-querybuilder/releases/tag/v0.2.0
