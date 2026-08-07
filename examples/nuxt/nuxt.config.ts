@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   // The published stylesheet, imported by its public specifier — this example consumes the
   // built `dist`, so it exercises the package `exports` map rather than the source tree.
-  css: ['vue-querybuilder/dist/query-builder.css'],
+  css: ['@react-querybuilder/vue/dist/query-builder.css'],
   nitro: {
     // The `node` preset exports a plain Node request handler, which lets `ssr-smoke-test.ts`
     // serve the build on an ephemeral port from a programmatic API. A spawned CLI

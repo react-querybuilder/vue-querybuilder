@@ -1,4 +1,4 @@
-# vue-querybuilder
+# @react-querybuilder/vue
 
 Vue 3 component for complex query building. A port of
 [React Query Builder](https://react-querybuilder.js.org) built on
@@ -6,11 +6,15 @@ Vue 3 component for complex query building. A port of
 byte-identical DOM output.
 
 > **Status: pre-release.** Nothing is published yet; `0.1.0` is the first planned release.
+>
+> **Package name is temporary.** The intended name is `vue-querybuilder`, but npm's automated
+> checks currently reject it as too similar to the existing `vue-query-builder`. The package
+> ships as `@react-querybuilder/vue` until that name is available.
 
 ## Installation
 
 ```bash
-npm install vue-querybuilder
+npm install @react-querybuilder/vue
 ```
 
 `vue@^3.5` is a peer dependency. `@react-querybuilder/core` is a regular dependency and is
@@ -21,8 +25,8 @@ re-exported in full, so you never need to depend on it directly.
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { formatQuery, QueryBuilder, type Field, type RuleGroupType } from 'vue-querybuilder';
-import 'vue-querybuilder/dist/query-builder.css';
+import { formatQuery, QueryBuilder, type Field, type RuleGroupType } from '@react-querybuilder/vue';
+import '@react-querybuilder/vue/dist/query-builder.css';
 
 const fields: Field[] = [
   { name: 'firstName', label: 'First Name' },
@@ -62,7 +66,7 @@ External control:
 
 ```vue
 <script setup lang="ts">
-import { QueryManager, QueryBuilder } from 'vue-querybuilder';
+import { QueryManager, QueryBuilder } from '@react-querybuilder/vue';
 
 const manager = new QueryManager({ combinator: 'and', rules: [] }, { history: true });
 const undo = () => manager.undo();

@@ -4,7 +4,7 @@
     "noEmit": true,
     "types": ["vite/client"],
     "paths": {
-      "vue-querybuilder": ["../../packages/vue-querybuilder/src/index.ts"]
+      "@react-querybuilder/vue": ["../../packages/vue-querybuilder/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "*.ts"],

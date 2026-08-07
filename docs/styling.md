@@ -1,6 +1,6 @@
 # Styling
 
-`vue-querybuilder` ships the same stylesheets as React Query Builder. They are copied from
+`@react-querybuilder/vue` ships the same stylesheets as React Query Builder. They are copied from
 `@react-querybuilder/core` at build time and asserted **byte-identical** to core's, so anything
 written for React Query Builder's CSS applies unchanged.
 
@@ -14,14 +14,14 @@ written for React Query Builder's CSS applies unchanged.
 Import one of them once, anywhere:
 
 ```ts
-import 'vue-querybuilder/dist/query-builder.css';
+import '@react-querybuilder/vue/dist/query-builder.css';
 ```
 
 Nuxt:
 
 ```ts
 export default defineNuxtConfig({
-  css: ['vue-querybuilder/dist/query-builder.css'],
+  css: ['@react-querybuilder/vue/dist/query-builder.css'],
 });
 ```
 
@@ -34,7 +34,7 @@ The `.scss` sources are published alongside the compiled CSS, so you can compile
 with different values:
 
 ```scss
-@use 'vue-querybuilder/dist/query-builder.scss' with (
+@use '@react-querybuilder/vue/dist/query-builder.scss' with (
   $rqb-spacing: 0.75rem,
   $rqb-base-color: #7b2ff7,
   $rqb-border-radius: 0.5rem,

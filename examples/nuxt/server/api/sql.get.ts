@@ -1,4 +1,4 @@
-import { formatQuery } from 'vue-querybuilder';
+import { formatQuery } from '@react-querybuilder/vue';
 import { query } from '#shared/query';
 
 /**

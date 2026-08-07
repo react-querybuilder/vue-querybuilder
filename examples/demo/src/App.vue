@@ -6,7 +6,7 @@ import {
   type Field,
   type RuleGroupType,
   type RuleGroupTypeIC,
-} from 'vue-querybuilder';
+} from '@react-querybuilder/vue';
 
 /** Seven field types, one per value editor the library ships. */
 const fields: Field[] = [

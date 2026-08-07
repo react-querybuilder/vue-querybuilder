@@ -1,4 +1,4 @@
-import type { Field, RuleGroupTypeIC } from 'vue-querybuilder';
+import type { Field, RuleGroupTypeIC } from '@react-querybuilder/vue';
 
 export const fields: Field[] = [
   { name: 'firstName', label: 'First Name' },

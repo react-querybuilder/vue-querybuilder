@@ -1,6 +1,6 @@
 # Differences from React Query Builder
 
-`vue-querybuilder` is a port, not a rewrite. It renders the same DOM, accepts (nearly) the same
+`@react-querybuilder/vue` is a port, not a rewrite. It renders the same DOM, accepts (nearly) the same
 props, and delegates all query logic to the same `@react-querybuilder/core` package that React
 Query Builder itself uses. This page lists everything that is not the same.
 
@@ -51,7 +51,7 @@ it in:
 
 ```vue
 <script setup lang="ts">
-import { QueryBuilder, QueryManager, formatQuery, type Field } from 'vue-querybuilder';
+import { QueryBuilder, QueryManager, formatQuery, type Field } from '@react-querybuilder/vue';
 
 const fields: Field[] = [
   { name: 'firstName', label: 'First Name' },

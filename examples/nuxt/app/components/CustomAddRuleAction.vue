@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ActionProps } from 'vue-querybuilder';
+import type { ActionProps } from '@react-querybuilder/vue';
 
 /**
  * A custom `addRuleAction` control, rendered from a `#addRuleAction` scoped slot.

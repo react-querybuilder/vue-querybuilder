@@ -23,7 +23,7 @@ import type { Translations, TranslationsFull } from '../types/translations.js';
  * {@link provideQueryBuilderContext}/{@link useQueryBuilderContext}.
  */
 const contextKey: InjectionKey<ComputedRef<QueryBuilderContextProps>> = Symbol(
-  'vue-querybuilder'
+  '@react-querybuilder/vue'
 ) as InjectionKey<ComputedRef<QueryBuilderContextProps>>;
 
 const emptyObject = {} as const;

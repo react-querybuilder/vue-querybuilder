@@ -1,5 +1,5 @@
 /**
- * Type definitions for `vue-querybuilder`.
+ * Type definitions for `@react-querybuilder/vue`.
  *
  * Everything not defined here is re-exported verbatim from `@react-querybuilder/core`, so
  * consumers never need a direct dependency on the core package.

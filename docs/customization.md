@@ -18,7 +18,7 @@ Vue content:
 ```vue
 <script setup lang="ts">
 import { h, ref } from 'vue';
-import { QueryBuilder } from 'vue-querybuilder';
+import { QueryBuilder } from '@react-querybuilder/vue';
 
 const query = ref({ combinator: 'and', rules: [] });
 const translations = {
@@ -134,7 +134,7 @@ that match modes create.
 
 ```vue
 <script setup lang="ts">
-import { provideQueryBuilderContext } from 'vue-querybuilder';
+import { provideQueryBuilderContext } from '@react-querybuilder/vue';
 import MyValueEditor from './MyValueEditor.vue';
 
 provideQueryBuilderContext({
@@ -158,7 +158,7 @@ scoped slots:
 ```vue
 <script setup lang="ts">
 import { useSlots } from 'vue';
-import { provideQueryBuilderContext } from 'vue-querybuilder';
+import { provideQueryBuilderContext } from '@react-querybuilder/vue';
 
 const slots = useSlots();
 provideQueryBuilderContext(() => ({ slots: { valueEditor: slots.valueEditor } }));
@@ -175,7 +175,7 @@ package barrel:
 ```vue
 <!-- MyValueEditor.vue -->
 <script setup lang="ts">
-import type { ValueEditorProps } from 'vue-querybuilder';
+import type { ValueEditorProps } from '@react-querybuilder/vue';
 
 defineOptions({ inheritAttrs: false });
 const props = defineProps<ValueEditorProps>();
@@ -204,7 +204,7 @@ names, the accessible description, and the child paths. Rather than recomputing 
 
 ```vue
 <script setup lang="ts">
-import { useRule, type RuleProps } from 'vue-querybuilder';
+import { useRule, type RuleProps } from '@react-querybuilder/vue';
 
 const props = defineProps<RuleProps>();
 const parts = useRule(() => props);
@@ -224,7 +224,7 @@ in:
 
 ```vue
 <script setup lang="ts">
-import { QueryBuilder, QueryManager } from 'vue-querybuilder';
+import { QueryBuilder, QueryManager } from '@react-querybuilder/vue';
 
 const manager = new QueryManager({ combinator: 'and', rules: [] }, { history: true });
 </script>

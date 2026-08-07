@@ -8,10 +8,10 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "bun run --filter vue-querybuilder build",
-    "check": "bun run --filter vue-querybuilder check && bun run check:examples",
+    "build": "bun run --filter @react-querybuilder/vue build",
+    "check": "bun run --filter @react-querybuilder/vue check && bun run check:examples",
     "check:examples": "bun run --filter '@vue-querybuilder/example-*' check",
-    "check:exports": "bun run --filter vue-querybuilder check:exports",
+    "check:exports": "bun run --filter @react-querybuilder/vue check:exports",
     "check:all": "bun run fmt:check && bun run build && bun run check && bun run check:exports && bun run lint && bun run test:coverage && bun run conformance && bun run test:ssr",
     "lint": "oxlint",
     "fmt": "oxfmt",
@@ -20,7 +20,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ssr": "bun run --filter @vue-querybuilder/example-nuxt test:ssr",
-    "conformance": "bun run --filter vue-querybuilder conformance"
+    "conformance": "bun run --filter @react-querybuilder/vue conformance"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

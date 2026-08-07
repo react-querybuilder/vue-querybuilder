@@ -1,5 +1,5 @@
 /**
- * Public entry point for `vue-querybuilder`.
+ * Public entry point for `@react-querybuilder/vue`.
  *
  * The type layer landed in step 2, the reactive layer in step 3, and the components in steps
  * 4-7 — alongside a verbatim re-export of `@react-querybuilder/core` so that consumers never

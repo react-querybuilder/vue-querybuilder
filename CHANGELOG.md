@@ -7,6 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Package renamed from `vue-querybuilder` to `@react-querybuilder/vue`. npm rejected the
+  unscoped name as too similar to the existing `vue-query-builder`. **This is temporary** — the
+  package will be published as `vue-querybuilder` once npm allows that name. The repository,
+  directory layout, and git remote are unchanged.
+
 ## [0.1.0] - 2026-08-06
 
 ### Added
@@ -40,7 +47,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `examples/demo` — Vite + Vue. Aliases the library source for HMR with no build step, and
   demonstrates seven field types, standard and independent-combinator queries, every display
   flag, undo/redo, and live `formatQuery` output in four formats.
-- `examples/nuxt` — Nuxt 4. Depends on `vue-querybuilder: workspace:*`, so it consumes the built
+- `examples/nuxt` — Nuxt 4. Depends on `@react-querybuilder/vue: workspace:*`, so it consumes the built
   `dist` and exercises the publishable artifact: the package `exports` map, its condition order,
   and the emitted declarations. Renders a nested independent-combinators query and calls
   `formatQuery` in a Nitro server route.

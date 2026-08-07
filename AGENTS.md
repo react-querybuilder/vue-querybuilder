@@ -4,10 +4,15 @@
 
 ## Project overview
 
-`vue-querybuilder` is a Vue 3 port of [React Query Builder](https://react-querybuilder.js.org),
-built on the published `@react-querybuilder/core`. The port's defining constraint is **full DOM
-parity**: tag name, document order, `data-testid`, `data-path`, and byte-identical `class`
-attributes must match React Query Builder's output for all conformance cases.
+The package `@react-querybuilder/vue` (repo/folder name `vue-querybuilder`) is a Vue 3 port of
+[React Query Builder](https://react-querybuilder.js.org), built on the published
+`@react-querybuilder/core`. The port's defining constraint is **full DOM parity**: tag name,
+document order, `data-testid`, `data-path`, and byte-identical `class` attributes must match
+React Query Builder's output for all conformance cases.
+
+The scoped name is **temporary**: npm's automated check rejects `vue-querybuilder` as too close
+to the existing `vue-query-builder`. Publish as `vue-querybuilder` once that name frees up. Repo
+URL, git remote, and every `packages/vue-querybuilder/...` path stay as they are.
 
 Blueprint: `svelte-querybuilder@0.1.1`. Deviate only where Vue idiom demands.
 
@@ -37,15 +42,15 @@ vue-querybuilder/
 Both live in `examples/` and are workspace packages named `@vue-querybuilder/example-*`. Root
 `check` fans out to them, so an example type error breaks CI.
 
-- **`examples/demo`** (Vite + Vue) aliases the library **source** (`vue-querybuilder` →
+- **`examples/demo`** (Vite + Vue) aliases the library **source** (`@react-querybuilder/vue` →
   `packages/vue-querybuilder/src/index.ts`) for HMR with no build. It also aliases
-  `vue-querybuilder/dist/*.css` to `@react-querybuilder/core/dist/*.css` — byte-identical — so
-  `main.ts` writes the same CSS import line a real consumer writes. **The CSS alias must be
-  listed first**, or the bare-specifier alias swallows it.
-- **`examples/nuxt`** (Nuxt 4) depends on `vue-querybuilder: workspace:*`, i.e. it consumes the
-  built `dist`. That is the point: the SSR gate tests the **publishable artifact** — the
-  `exports` map, its condition order, the emitted `.d.ts` — not the source tree. **`bun run build`
-  must run before `test:ssr`.**
+  `@react-querybuilder/vue/dist/*.css` to `@react-querybuilder/core/dist/*.css` —
+  byte-identical — so `main.ts` writes the same CSS import line a real consumer writes.
+  **The CSS alias must be listed first**, or the bare-specifier alias swallows it.
+- **`examples/nuxt`** (Nuxt 4) depends on `@react-querybuilder/vue: workspace:*`, i.e. it
+  consumes the built `dist`. That is the point: the SSR gate tests the **publishable
+  artifact** — the `exports` map, its condition order, the emitted `.d.ts` — not the
+  source tree. **`bun run build` must run before `test:ssr`.**
 
 ### Nuxt example specifics
 

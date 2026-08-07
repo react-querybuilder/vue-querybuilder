@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { QueryBuilder } from 'vue-querybuilder';
+import { QueryBuilder } from '@react-querybuilder/vue';
 import CustomAddRuleAction from '../components/CustomAddRuleAction.vue';
 import { fields, query as initialQuery } from '#shared/query';
 
