@@ -1,24 +1,24 @@
 /**
  * Full DOM parity: the verbatim `class` attribute of every element with one, in document order,
- * for all 49 scenario × query pairs.
+ * for all 50 scenario × query pairs.
  *
  * ## Pre-flush extraction
  *
  * The fixtures were produced with `renderToStaticMarkup`, so no React effect has run. The Vue
- * port has one effect that can change rendered output — the value-editor reset watcher from
- * step 3, which is `flush: 'post'` and whose mount-time run is deferred by a `nextTick` — so the
- * conformance assertion extracts immediately after `render()`, before awaiting `nextTick()`, and
- * a separate `describe` asserts that the surface is *stable* across a flush. If the reset ever
- * does change a class post-flush, that second suite is where it surfaces, as a documented
- * divergence rather than a conformance failure.
+ * port has one effect that can change rendered output — the value-editor reset watcher, which is
+ * `flush: 'post'` and whose mount-time run is deferred by a `nextTick` — so the conformance
+ * assertion extracts immediately after `render()`, before awaiting `nextTick()`.
+ *
+ * The post-flush surface is asserted separately, against its own fixture layer, in
+ * `classnames-post-flush.test.ts`. That file replaces the ad-hoc "surface is stable across a
+ * flush" suite this one used to carry: the invariant is now stated upstream per case via
+ * `differsFromStatic` rather than invented here.
  */
 
 import { cleanup } from '@testing-library/vue';
 import { afterEach, describe, expect, it } from 'vitest';
-import { nextTick } from 'vue';
 import { loadFixture, renderAndExtract, renderPairs } from './cases.js';
 import type { ClassNameEntry } from './extract.js';
-import { extract } from './extract.js';
 import { scenarios } from './scenarios.js';
 
 interface ClassNamesFixture {
@@ -61,19 +61,4 @@ describe('conformance: classnames', () => {
       expect(classNames).toEqual(expected.classNames);
     });
   }
-
-  describe('post-flush stability', () => {
-    for (const [i, pair] of renderPairs.entries()) {
-      const expected = fixture.cases[i];
-
-      it(`${expected.scenario} × ${expected.query}`, async () => {
-        const { container, classNames } = renderAndExtract(pair);
-        expect(classNames).toEqual(expected.classNames);
-
-        await nextTick();
-
-        expect(extract(container).classNames).toEqual(classNames);
-      });
-    }
-  });
 });

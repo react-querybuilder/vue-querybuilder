@@ -126,6 +126,7 @@ const firstOptionOfValues = computed(() => getFirstOption(values.value as FullOp
         :type="inputTypeCoerced"
         :placeholder="placeholderText"
         :value="valueAsArray[0] ?? ''"
+        :title="props.title"
         :class="valueListItemClassName"
         :disabled="props.disabled"
         @input="e => multiValueHandler((e.target as HTMLInputElement).value, 0)" />
@@ -134,6 +135,7 @@ const firstOptionOfValues = computed(() => getFirstOption(values.value as FullOp
         :type="inputTypeCoerced"
         :placeholder="placeholderText"
         :value="valueAsArray[1] ?? ''"
+        :title="props.title"
         :class="valueListItemClassName"
         :disabled="props.disabled"
         @input="e => multiValueHandler((e.target as HTMLInputElement).value, 1)" />
@@ -142,6 +144,7 @@ const firstOptionOfValues = computed(() => getFirstOption(values.value as FullOp
       <component
         :is="selectorComponent"
         v-bind="propsForValueSelector"
+        :title="props.title"
         :className="valueListItemClassName"
         :handleOnChange="(v: unknown) => multiValueHandler(v, 0)"
         :disabled="props.disabled"
@@ -152,6 +155,7 @@ const firstOptionOfValues = computed(() => getFirstOption(values.value as FullOp
       <component
         :is="selectorComponent"
         v-bind="propsForValueSelector"
+        :title="props.title"
         :className="valueListItemClassName"
         :handleOnChange="(v: unknown) => multiValueHandler(v, 1)"
         :disabled="props.disabled"

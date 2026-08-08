@@ -116,6 +116,27 @@ describe('ValueEditor', () => {
     expect((getByTestId('value-editor') as HTMLSelectElement).multiple).toBe(true);
   });
 
+  it('renders a multiselect for the "in" operator and leaves the array value intact', async () => {
+    const props = baseProps({
+      operator: 'in',
+      type: 'multiselect',
+      values,
+      value: ['v1'],
+      listsAsArrays: true,
+    });
+    const { getByTestId } = render(ValueEditor, { props: props as never });
+    const select = getByTestId('value-editor') as HTMLSelectElement;
+    expect(select.multiple).toBe(true);
+
+    await userEvent.selectOptions(select, ['v1', 'v2']);
+    expect(props.handleOnChange).toHaveBeenLastCalledWith(['v1', 'v2']);
+
+    // `in` + `multiselect` is reset-exempt: the array survives the post-mount reset run.
+    props.handleOnChange.mockClear();
+    await nextTick();
+    expect(props.handleOnChange).not.toHaveBeenCalled();
+  });
+
   it('renders a textarea', async () => {
     const props = baseProps({ type: 'textarea' });
     const { getByTestId } = render(ValueEditor, { props: props as never });
@@ -193,4 +214,25 @@ describe('ValueEditor', () => {
     await nextTick();
     expect(props.handleOnChange).not.toHaveBeenCalled();
   });
+
+  // The cross-implementation anchor for the reset is `classnames-post-flush.json`, but upstream's
+  // mount-query-change effect clobbers the *mount-time* reset, so no fixture case can observe it
+  // (see RQB_POST-FLUSH_CONFORMANCE.md §5). A post-mount operator change is the reachable path,
+  // and this is the assertion that stands in for the fixture gate.
+  it.each([
+    ['in', { operator: 'in', value: ['a', 'b'] }, 'a'],
+    ['between', { operator: 'between', value: '10,20', inputType: 'number' }, '10'],
+  ])(
+    'collapses the value when the operator changes from %s to a scalar',
+    async (_label, overrides, collapsed) => {
+      const props = baseProps(overrides);
+      const { rerender } = render(ValueEditor, { props: props as never });
+      await nextTick();
+      expect(props.handleOnChange).not.toHaveBeenCalled();
+
+      await rerender({ ...props, operator: '=' } as never);
+      await nextTick();
+      expect(props.handleOnChange).toHaveBeenCalledWith(collapsed);
+    }
+  );
 });

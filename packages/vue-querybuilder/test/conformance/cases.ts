@@ -6,6 +6,7 @@
 import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { render } from '@testing-library/vue';
+import { nextTick } from 'vue';
 import { QueryBuilder } from '../../src/components/index.js';
 import type { ExtractResult } from './extract.js';
 import { extract } from './extract.js';
@@ -74,6 +75,41 @@ export const renderAndExtract = ({
   // looseness is contained rather than something the component API is missing.
   const props = { ...scenario.props, query, onQueryChange: () => {} } as Record<string, unknown>;
   const { container } = render(QueryBuilder, { props });
+
+  return { container, ...extract(container) };
+};
+
+/**
+ * Awaits ticks until the extracted surface stops changing, or throws.
+ *
+ * Bounded, not a fixed tick count: a reset write triggers a re-render that may schedule further
+ * effects, and the right number of ticks depends on `flush: 'post'` ordering plus the
+ * `nextTick`-deferred mount run in `useValueEditorReset.ts`. A surface that never settles is an
+ * effect loop and must fail loudly rather than be papered over by a bigger constant.
+ */
+const drain = async (container: Element, max = 10): Promise<void> => {
+  let previous = JSON.stringify(extract(container));
+  for (let i = 0; i < max; i++) {
+    await nextTick();
+    const current = JSON.stringify(extract(container));
+    if (current === previous) return;
+    previous = current;
+  }
+  throw new Error(`Surface did not stabilize within ${max} ticks — probable effect loop.`);
+};
+
+/**
+ * Renders a pair the way the post-flush fixture layer was generated: **uncontrolled**
+ * (`defaultQuery`, no `onQueryChange` / `update:query` handler) so effect-driven query changes
+ * land instead of being reverted by the controlled-prop sync, then drained to stability.
+ */
+export const renderAndExtractPostFlush = async ({
+  scenario,
+  query,
+}: RenderPair): Promise<ExtractResult & { container: Element }> => {
+  const props = { ...scenario.props, defaultQuery: query } as Record<string, unknown>;
+  const { container } = render(QueryBuilder, { props });
+  await drain(container);
 
   return { container, ...extract(container) };
 };

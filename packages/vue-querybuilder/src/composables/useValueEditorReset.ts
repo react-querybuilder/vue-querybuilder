@@ -42,9 +42,20 @@ export interface ValueEditorResetDeps {
  *
  * The mount-time run is scheduled on the next tick rather than passed as `immediate: true`.
  * Vue invokes an immediate callback synchronously at watch creation, ignoring `flush: 'post'`,
- * which would apply the reset *before* first render; React applies it after. Deferring keeps the
- * first painted DOM identical to React's, which the conformance suite asserts by extracting
- * before `nextTick()`.
+ * which would apply the reset *before* first render; React applies it after.
+ *
+ * That deferral is load-bearing for the **static** conformance layer: `classnames.json` comes
+ * from `renderToStaticMarkup`, so no effect has run in it, and the port's pre-flush surface is
+ * extracted before `nextTick()` to match. Dropping the deferral would apply the reset during
+ * render and break that layer.
+ *
+ * The **post-flush** layer (`classnames-post-flush.json`, `schemaVersion` 2) is what proves the
+ * deferred run subsequently lands: it is rendered uncontrolled with effects flushed, and each
+ * case carries `differsFromStatic`. Two layers, two opposing requirements, both now pinned.
+ *
+ * Caveat worth knowing: upstream's mount-query-change effect dispatches the whole `defaultQuery`
+ * over any mount-time reset, so *no* fixture case can observe the reset landing. The reachable
+ * path is a post-mount operator change, asserted in `ValueEditor.test.ts`.
  *
  * @returns The watch handle, so a caller can stop it early. It is otherwise bound to the
  * enclosing effect scope.
