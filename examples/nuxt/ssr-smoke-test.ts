@@ -1,5 +1,5 @@
 /**
- * SSR smoke test — the Phase 2 phase gate.
+ * SSR smoke test.
  *
  * Builds the Nuxt example (which consumes the *published artifact*: `@react-querybuilder/vue` is a
  * workspace dependency, so this exercises the package `exports` map, its condition order, and

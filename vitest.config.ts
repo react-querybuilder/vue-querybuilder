@@ -12,8 +12,8 @@ export default defineConfig({
       exclude: ['**/*.{test,spec,test-d}.*'],
       thresholds: {
         lines: 80,
-        // Milestone B completes the component layer, so `src/` as a whole now carries a higher
-        // bar than the 80% floor the root keeps for anything added later.
+        // `src/` now holds the full component layer, so it carries a higher bar than the 80%
+        // floor the root keeps for anything added later.
         'packages/*/src/**': { lines: 90 },
       },
     },

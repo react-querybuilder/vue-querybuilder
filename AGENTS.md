@@ -187,9 +187,9 @@ runs it.
 Two thresholds: 80% lines globally, and **90% lines over `packages/*/src/composables/**`** — the
 reactive layer is load-bearing and has no DOM to backstop it.
 
-Both were proven red at step 3 (raised to 100, confirmed the error, reverted). The step-1 vacuity
-hazard is discharged: `src/` now holds real executable code, so v8 no longer reports `0/0` and the
-threshold no longer passes trivially.
+Both thresholds are proven red when raised to 100 (the check fails as expected, then reverted).
+`src/` holds real executable code, so v8 does not report `0/0` and the threshold does not pass
+trivially.
 
 Test helpers belong in `packages/vue-querybuilder/test/`, not `src/` — anything under `src/` is
 both built into `dist` and counted against coverage.

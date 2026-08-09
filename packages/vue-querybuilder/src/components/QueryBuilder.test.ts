@@ -265,7 +265,7 @@ describe('QueryBuilder', () => {
       showUndoRedo: true,
       showCombinatorsBetweenRules: true,
     });
-    // Milestone B: no key resolves to `nullComponent` any more.
+    // Every optional-control key resolves to a real component; none maps to `nullComponent`.
     expect(queryAllByTestId('not-toggle')).toHaveLength(1);
     // One per rule, plus one for the group itself (which is the root, so it renders none).
     expect(queryAllByTestId('shift-actions')).toHaveLength(2);

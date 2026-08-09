@@ -8,8 +8,8 @@ import type { RuleGroupProps } from '../types/props.js';
  * The controls in a rule group's header, without the wrapping `<div>`.
  *
  * Port of React Query Builder's `RuleGroupHeaderComponents` (`RuleGroup.tsx`). Internal rather
- * than a control element — the `ruleGroupHeaderElements` control element was dropped in step 2 —
- * and a separate component only so that a rule with a subquery can reuse it.
+ * than a control element — there is no `ruleGroupHeaderElements` control element — and a
+ * separate component only so that a rule with a subquery can reuse it.
  */
 defineOptions({ name: 'RuleGroupHeader', inheritAttrs: false });
 

@@ -7,7 +7,7 @@ import { testFields } from '../../test/support.js';
 import QueryBuilder from './QueryBuilder.vue';
 
 /**
- * The feature surface milestone B completes. Everything here is cheap — core does the work —
+ * The full feature surface. Everything here is cheap — core does the work —
  * so the point is to pin that each feature is actually wired up, not to re-test core.
  */
 
@@ -31,7 +31,7 @@ const ic: RuleGroupTypeIC = {
 const renderQB = (props: Record<string, unknown> = {}) =>
   render(QueryBuilder, { props: { fields: testFields, ...props } });
 
-describe('milestone B features', () => {
+describe('feature surface', () => {
   describe('independent combinators', () => {
     it('renders an inline combinator per combinator slot and none in the header', () => {
       const { container, getAllByTestId } = renderQB({ defaultQuery: ic });

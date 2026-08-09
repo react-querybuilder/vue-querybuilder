@@ -15,8 +15,8 @@ import ValueSelector from './ValueSelector.vue';
  * The default component for every control.
  *
  * `mergeControlElements` leaves a key unset when neither the props, the inherited context, nor
- * the defaults supply a component, so every one of the 24 keys must have an entry here. As of
- * milestone B every key resolves to a real component; none maps to `nullComponent`.
+ * the defaults supply a component, so every one of the 24 keys must have an entry here. Every
+ * key resolves to a real component; none maps to `nullComponent`.
  */
 export const defaultControlElements = {
   actionElement: ActionElement,

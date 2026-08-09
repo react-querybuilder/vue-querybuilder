@@ -1,9 +1,9 @@
 /**
  * Public entry point for `@react-querybuilder/vue`.
  *
- * The type layer landed in step 2, the reactive layer in step 3, and the components in steps
- * 4-7 — alongside a verbatim re-export of `@react-querybuilder/core` so that consumers never
- * need a direct dependency on core.
+ * Re-exports the type layer, the reactive (composables) layer, and the components — alongside
+ * a verbatim re-export of `@react-querybuilder/core` so that consumers never need a direct
+ * dependency on core.
  */
 export * from '@react-querybuilder/core';
 export * from './components/index.js';

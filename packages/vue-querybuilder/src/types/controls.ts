@@ -22,7 +22,7 @@ import type {
  *
  * There is no `dragHandle` entry: drag-and-drop is a non-goal. There are no
  * `ruleGroupHeaderElements`/`ruleGroupBodyElements` entries either; to customize the contents of
- * a group's header or body, use a replacement `ruleGroup` component (or, as of step 7, a slot).
+ * a group's header or body, use a replacement `ruleGroup` component (or a slot).
  *
  * @group Props
  */
