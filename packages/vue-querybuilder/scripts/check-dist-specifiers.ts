@@ -10,16 +10,17 @@
  * to the `./Foo.js` form that both `tsc` and `vue-tsc` can resolve, so one surviving in `dist`
  * means that step did not run or did not cover a case.
  *
- * Also checks the `exports` map itself: every target must exist in `dist/`, and every conditional
+ * Also checks the `exports` map itself: every target must resolve inside `dist/` and exist, and every conditional
  * entry must list `types` first. `attw` catches a missing `types` condition but not a target that
  * was never built, and condition order is significant — the first match wins, so a `types` after
  * `import` is never consulted.
  */
 import { Glob } from 'bun';
 import { existsSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, sep } from 'node:path';
 
-const distDir = resolve(new URL('..', import.meta.url).pathname, 'dist');
+const packageDir = resolve(new URL('..', import.meta.url).pathname);
+const distDir = resolve(packageDir, 'dist');
 
 if (!existsSync(distDir)) {
   console.error('dist/ not found — run `bun run build` first.');
@@ -50,7 +51,7 @@ const failures: string[] = [];
 
 // ---- `exports` map -------------------------------------------------------------------------
 
-const packageJsonPath = resolve(distDir, '..', 'package.json');
+const packageJsonPath = resolve(packageDir, 'package.json');
 const exportsMap = (await Bun.file(packageJsonPath).json()).exports as Record<
   string,
   string | Record<string, string>
@@ -72,7 +73,14 @@ for (const [subpath, entry] of Object.entries(exportsMap)) {
     );
   }
   for (const [condition, target] of Object.entries(entry)) {
-    if (!existsSync(resolve(distDir, '..', target))) {
+    const abs = resolve(packageDir, target);
+    // Containment first: a target outside `dist/` is not a build output, so merely existing
+    // (e.g. `./src/index.ts`) must not pass.
+    if (abs !== distDir && !abs.startsWith(`${distDir}${sep}`)) {
+      failures.push(`exports["${subpath}"].${condition}: '${target}' is outside dist/`);
+      continue;
+    }
+    if (!existsSync(abs)) {
       failures.push(`exports["${subpath}"].${condition}: '${target}' does not exist`);
     }
   }

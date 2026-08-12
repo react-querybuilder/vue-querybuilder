@@ -5,8 +5,11 @@ import type {
   RuleType,
 } from '@react-querybuilder/core';
 import { defaultTranslations } from '@react-querybuilder/core';
+import type { RenderResult } from '@testing-library/vue';
+import { render } from '@testing-library/vue';
 import type { EffectScope } from 'vue';
-import { effectScope } from 'vue';
+import { defineComponent, effectScope, h } from 'vue';
+import { QueryBuilderPlugin } from '../src/plugin.js';
 import type { QueryBuilderProps, RuleGroupProps, RuleProps } from '../src/types/index.js';
 
 /**
@@ -122,3 +125,13 @@ export const ruleGroupProps = (
   translations: defaultTranslations as never,
   ...overrides,
 });
+
+/** Mounts a component with no providers, for the internal parts' injection guards. */
+export const mountBare = (component: unknown): RenderResult =>
+  render(defineComponent({ render: () => h(component as never) }));
+
+/** Mounts `template` in an app with {@link QueryBuilderPlugin} installed. */
+export const mountWithPlugin = (template: string, options?: { prefix?: string }): RenderResult =>
+  render(defineComponent({ template }), {
+    global: { plugins: [options ? [QueryBuilderPlugin, options] : QueryBuilderPlugin] },
+  });

@@ -29,7 +29,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a likely collision in any globally registered setup.
 - **`RuleComponents`, `RuleGroupHeader`, `RuleGroupBody`, and `RuleSubQuery` are no longer
   exported**, and their prop types are gone with them. **Breaking.** The docs always described
-  them as internal; they now read everything they render from through injection and cannot be
+  them as internal; they now read everything they render through injection and cannot be
   mounted on their own. Replace a rule or group with the `rule`/`ruleGroup` `controlElements`
   key or slot, built on `useRule`/`useRuleGroup`.
 

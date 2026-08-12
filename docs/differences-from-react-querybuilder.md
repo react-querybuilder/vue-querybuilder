@@ -209,7 +209,7 @@ Additional deltas:
   Builder has no equivalent export; `Label` was too generic a name for a package that can be
   registered globally.
 - **`RuleComponents`, `RuleGroupHeader`, `RuleGroupBody`, and `RuleSubQuery` are internal.**
-  They and their prop types are not exported. They read everything they render from through
+  They and their prop types are not exported. They read everything they render through
   provide/inject and cannot be mounted outside a `Rule`/`RuleGroup`.
 - **A generic SFC's props parameter carries an index signature.** `vue-tsc` types it as
   `Props & Record<string, unknown>`, so an interface-typed variable is not directly assignable

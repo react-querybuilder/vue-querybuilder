@@ -67,6 +67,8 @@ resolver instead, and skip the plugin:
 
 ```ts
 // vite.config.ts
+import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vite';
 import Components from 'unplugin-vue-components/vite';
 import { QueryBuilderResolver } from '@react-querybuilder/vue/resolver';
 

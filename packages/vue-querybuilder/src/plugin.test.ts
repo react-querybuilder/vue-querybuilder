@@ -1,6 +1,6 @@
-import { render } from '@testing-library/vue';
 import { describe, expect, it } from 'vitest';
-import { createApp, defineComponent, h } from 'vue';
+import { createApp, h } from 'vue';
+import { mountWithPlugin } from '../test/support.js';
 import {
   defaultComponentPrefix,
   queryBuilderComponentNames,
@@ -9,11 +9,6 @@ import {
   resolveComponentName,
 } from './plugin.js';
 import { QueryBuilderResolver } from './resolver.js';
-
-const mountWithPlugin = (template: string, options?: { prefix?: string }) =>
-  render(defineComponent({ template }), {
-    global: { plugins: [options ? [QueryBuilderPlugin, options] : QueryBuilderPlugin] },
-  });
 
 describe('QueryBuilderPlugin', () => {
   it('registers every component under the default `Qb` prefix', () => {
