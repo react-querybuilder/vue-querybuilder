@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useId } from 'vue';
-import { Label } from '../internal/Label.js';
+import { QueryBuilderLabel } from '../internal/QueryBuilderLabel.js';
 import type { NotToggleProps } from '../types/props.js';
 
 /**
@@ -27,7 +27,8 @@ const id = useId();
       type="checkbox"
       :checked="!!props.checked"
       :disabled="props.disabled"
-      @change="e => props.handleOnChange((e.target as HTMLInputElement).checked)" /><Label
-      :label="props.label"
+      @change="
+        e => props.handleOnChange((e.target as HTMLInputElement).checked)
+      " /><QueryBuilderLabel :label="props.label"
   /></label>
 </template>

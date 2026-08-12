@@ -1,10 +1,12 @@
 <script setup lang="ts" generic="F extends FullOption = FullOption, O extends string = string">
 import type { FullOption } from '@react-querybuilder/core';
 import { TestID } from '@react-querybuilder/core';
+import { provideCurrentRuleGroup, provideQueryBuilderNode } from '../composables/accessors.js';
 import { useRuleGroup } from '../composables/useRuleGroup.js';
+import { provideRuleGroupInternals } from '../internal/parts.js';
+import RuleGroupBody from '../internal/RuleGroupBody.vue';
+import RuleGroupHeader from '../internal/RuleGroupHeader.vue';
 import type { RuleGroupProps } from '../types/props.js';
-import RuleGroupBody from './RuleGroupBody.vue';
-import RuleGroupHeader from './RuleGroupHeader.vue';
 
 /**
  * Default component for `RuleGroupType` and `RuleGroupTypeIC` objects.
@@ -29,6 +31,17 @@ const widenedProps = props as unknown as RuleGroupProps;
 const parts = useRuleGroup(() => widenedProps);
 
 const { ruleGroup, classNames, outerClassName, accessibleDescription } = parts;
+
+// Internal: how `RuleGroupHeader`/`RuleGroupBody` reach everything they render from.
+provideRuleGroupInternals(widenedProps, parts);
+
+// Public: the `useSchema`/`useCurrentRuleGroup`/... accessors, for replacement controls. See
+// `Rule.vue`.
+provideQueryBuilderNode(
+  () => widenedProps.schema,
+  () => widenedProps.actions
+);
+provideCurrentRuleGroup(ruleGroup, () => widenedProps.path);
 </script>
 
 <template>
@@ -41,10 +54,10 @@ const { ruleGroup, classNames, outerClassName, accessibleDescription } = parts;
     :data-level="props.path.length"
     :data-path="JSON.stringify(props.path)">
     <div :class="classNames.header">
-      <RuleGroupHeader :groupProps="widenedProps" :parts="parts" />
+      <RuleGroupHeader />
     </div>
     <div :class="classNames.body">
-      <RuleGroupBody :groupProps="widenedProps" :parts="parts" />
+      <RuleGroupBody />
     </div>
   </div>
 </template>

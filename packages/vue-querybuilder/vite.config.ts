@@ -6,7 +6,12 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     lib: {
-      entry: resolve(import.meta.dirname, 'src/index.ts'),
+      entry: [
+        resolve(import.meta.dirname, 'src/index.ts'),
+        // A second entry so that `@react-querybuilder/vue/resolver` is a real subpath export
+        // with its own declaration file, rather than a source file shipped as-is.
+        resolve(import.meta.dirname, 'src/resolver.ts'),
+      ],
       formats: ['es'],
     },
     rollupOptions: {

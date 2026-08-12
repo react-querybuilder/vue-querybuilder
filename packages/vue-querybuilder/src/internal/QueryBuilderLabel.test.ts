@@ -2,14 +2,16 @@ import { render } from '@testing-library/vue';
 import { describe, expect, it } from 'vitest';
 import { defineComponent, h } from 'vue';
 import type { LabelNode } from '../types/translations.js';
-import { Label } from './Label.js';
+import { QueryBuilderLabel } from './QueryBuilderLabel.js';
 
 const renderLabel = (label?: LabelNode | null) =>
   render(
-    defineComponent({ render: () => h('div', { 'data-testid': 'host' }, [h(Label, { label })]) })
+    defineComponent({
+      render: () => h('div', { 'data-testid': 'host' }, [h(QueryBuilderLabel, { label })]),
+    })
   );
 
-describe('Label', () => {
+describe('QueryBuilderLabel', () => {
   it('renders a string with no wrapper element', () => {
     const { getByTestId } = renderLabel('Add rule');
     const host = getByTestId('host');

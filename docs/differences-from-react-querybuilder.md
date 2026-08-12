@@ -32,7 +32,8 @@ None of the following is planned for v1:
   per-prop fallbacks `RuleGroupProps.combinator`/`rules`/`not` and
   `RuleProps.field`/`operator`/`value`/`valueSource`, are all absent. Use `ruleGroup` and `rule`.
 - **`ruleGroupHeaderElements` / `ruleGroupBodyElements`.** The equivalent internal components
-  exist (`RuleGroupHeader`, `RuleGroupBody`) but are not `controlElements` keys.
+  exist (`RuleGroupHeader`, `RuleGroupBody`) but are not `controlElements` keys, and are not
+  exported.
 
 ## 3. State management
 
@@ -204,6 +205,12 @@ Additional deltas:
 - **`Rule` and `RuleGroup` are generic too** (`F`/`O`), matching React. The parameters are a
   consumer-facing convenience; internally the props are widened to the default instantiation,
   because `Schema`'s resolvers are invariant in their option types.
+- **`Label` is `QueryBuilderLabel`, and `LabelProps` is `QueryBuilderLabelProps`.** React Query
+  Builder has no equivalent export; `Label` was too generic a name for a package that can be
+  registered globally.
+- **`RuleComponents`, `RuleGroupHeader`, `RuleGroupBody`, and `RuleSubQuery` are internal.**
+  They and their prop types are not exported. They read everything they render from through
+  provide/inject and cannot be mounted outside a `Rule`/`RuleGroup`.
 - **A generic SFC's props parameter carries an index signature.** `vue-tsc` types it as
   `Props & Record<string, unknown>`, so an interface-typed variable is not directly assignable
   when the component is invoked through `h()`. Spread it, or add the index signature. Templates

@@ -7,6 +7,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`QueryBuilderPlugin`**, a Vue plugin that registers `QueryBuilder` and the ten default
+  control elements globally. The name prefix defaults to `Qb` (`<QbQueryBuilder>`); pass
+  `{ prefix: '' }` for the bare names. Entirely optional — the named exports are unchanged, and
+  nothing about the plugin affects rendering.
+- **`@react-querybuilder/vue/resolver`**, a `QueryBuilderResolver` for
+  [`unplugin-vue-components`](https://github.com/unplugin/unplugin-vue-components), so a prefixed
+  component in a template needs no import. New subpath export.
+- **Injection accessors for replacement controls**: `useSchema`, `useQueryBuilderActions`,
+  `useCurrentRule`, `useCurrentRuleGroup`, and `useCurrentPath`. Strictly additive — every
+  subcomponent still receives the same props. _Props for parity, inject for ergonomics._ Each
+  returns `undefined` when there is no provider, and is safe to call outside a component
+  instance.
+
+### Removed
+
+- **`Label` is renamed to `QueryBuilderLabel`** (and `LabelProps` to `QueryBuilderLabelProps`).
+  **Breaking, with no deprecated alias.** `Label` is far too generic for a top-level export and
+  a likely collision in any globally registered setup.
+- **`RuleComponents`, `RuleGroupHeader`, `RuleGroupBody`, and `RuleSubQuery` are no longer
+  exported**, and their prop types are gone with them. **Breaking.** The docs always described
+  them as internal; they now read everything they render from through injection and cannot be
+  mounted on their own. Replace a rule or group with the `rule`/`ruleGroup` `controlElements`
+  key or slot, built on `useRule`/`useRuleGroup`.
+
 ### Changed
 
 - Structural manager options are now reactive. `fields`, `operators`, `combinators`,
@@ -21,6 +47,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The published ESM rendered no rules at all under a real Node ESM loader** (SSR, and any
+  consumer not going through a bundler). `defaultControlElements` sits in an import cycle, and
+  Node's evaluation order left `rule` bound to the temporal-dead-zone `undefined` — silently, so
+  every group rendered and no rule did. The self-referential keys are accessors now.
+  `scripts/check-dist-runtime.ts` loads the built artifact and guards it.
 - The query, the undo/redo history, and every manager subscriber now survive a configuration
   change: nothing is recreated, so `canUndo`/`canRedo` and pending history entries are
   preserved.

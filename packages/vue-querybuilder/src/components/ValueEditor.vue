@@ -12,7 +12,7 @@ import {
 } from '@react-querybuilder/core';
 import { computed, useId } from 'vue';
 import { useValueEditorReset } from '../composables/useValueEditorReset.js';
-import { Label } from '../internal/Label.js';
+import { QueryBuilderLabel } from '../internal/QueryBuilderLabel.js';
 import type { ValueEditorProps, ValueSelectorProps } from '../types/props.js';
 
 /**
@@ -130,7 +130,7 @@ const firstOptionOfValues = computed(() => getFirstOption(values.value as FullOp
         :class="valueListItemClassName"
         :disabled="props.disabled"
         @input="e => multiValueHandler((e.target as HTMLInputElement).value, 0)" />
-      <Label :label="props.separator" />
+      <QueryBuilderLabel :label="props.separator" />
       <input
         :type="inputTypeCoerced"
         :placeholder="placeholderText"
@@ -151,7 +151,7 @@ const firstOptionOfValues = computed(() => getFirstOption(values.value as FullOp
         :value="valueAsArray[0] ?? firstOptionOfValues"
         :options="values"
         :listsAsArrays="props.listsAsArrays" />
-      <Label :label="props.separator" />
+      <QueryBuilderLabel :label="props.separator" />
       <component
         :is="selectorComponent"
         v-bind="propsForValueSelector"
@@ -207,8 +207,9 @@ const firstOptionOfValues = computed(() => getFirstOption(values.value as FullOp
         :value="v.name"
         :disabled="props.disabled"
         :checked="props.value === v.name"
-        @change="e => props.handleOnChange((e.target as HTMLInputElement).value)" /><Label
-        :label="v.label" />
+        @change="
+          e => props.handleOnChange((e.target as HTMLInputElement).value)
+        " /><QueryBuilderLabel :label="v.label" />
     </label>
   </span>
   <input

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { isRuleGroup } from '@react-querybuilder/core';
-import { computed, reactive } from 'vue';
-import type { UseRuleGroupReturn } from '../composables/useRuleGroup.js';
+import { computed } from 'vue';
 import type { RuleGroupProps, RuleProps } from '../types/props.js';
+import { useRuleGroupInternals } from './parts.js';
 
 /**
  * The rules, groups, and inline combinators in a rule group's body, without the wrapping
@@ -13,17 +13,16 @@ import type { RuleGroupProps, RuleProps } from '../types/props.js';
  *
  * Nested groups and rules render through `schema.controls`, so this component never refers to
  * `RuleGroup` directly and a replacement `ruleGroup`/`rule` component applies at every level.
+ *
+ * Everything it renders from comes through injection — see `parts.ts`.
  */
 defineOptions({ name: 'RuleGroupBody', inheritAttrs: false });
 
-const props = defineProps<{ groupProps: RuleGroupProps; parts: UseRuleGroupReturn }>();
+const { props: groupProps, parts } = useRuleGroupInternals();
 
-// See `RuleComponents.vue` for why the parts object is unwrapped with `reactive`.
-const parts = reactive(props.parts);
-
-const schema = computed(() => props.groupProps.schema);
-const translations = computed(() => props.groupProps.translations);
-const path = computed(() => props.groupProps.path);
+const schema = computed(() => groupProps.value.schema);
+const translations = computed(() => groupProps.value.translations);
+const path = computed(() => groupProps.value.path);
 const controls = computed(() => schema.value.controls);
 
 /**
@@ -65,7 +64,7 @@ const children = computed(() =>
       :handleOnChange="parts.onCombinatorChange"
       :rules="parts.ruleGroup.rules"
       :level="path.length"
-      :context="props.groupProps.context"
+      :context="groupProps.context"
       :validation="parts.validationResult"
       :component="controls.combinatorSelector"
       :path="child.path"
@@ -82,7 +81,7 @@ const children = computed(() =>
       :handleOnChange="(value: string) => parts.onIndependentCombinatorChange(value, child.index)"
       :rules="parts.ruleGroup.rules"
       :level="path.length"
-      :context="props.groupProps.context"
+      :context="groupProps.context"
       :validation="parts.validationResult"
       :component="controls.combinatorSelector"
       :path="child.path"
@@ -94,30 +93,30 @@ const children = computed(() =>
       v-else-if="child.isGroup"
       :id="child.id"
       :schema="schema"
-      :actions="props.groupProps.actions"
+      :actions="groupProps.actions"
       :path="child.path"
       :translations="translations"
       :ruleGroup="child.group"
       :disabled="child.disabled"
-      :parentDisabled="props.groupProps.parentDisabled || parts.disabled"
-      :parentMuted="props.groupProps.parentMuted || parts.muted"
+      :parentDisabled="groupProps.parentDisabled || parts.disabled"
+      :parentMuted="groupProps.parentMuted || parts.muted"
       :shiftUpDisabled="child.shiftUpDisabled"
       :shiftDownDisabled="child.shiftDownDisabled"
-      :context="props.groupProps.context" />
+      :context="groupProps.context" />
     <component
       :is="controls.rule"
       v-else
       :id="child.id"
       :rule="child.rule"
       :schema="schema"
-      :actions="props.groupProps.actions"
+      :actions="groupProps.actions"
       :path="child.path"
       :disabled="child.disabled"
-      :parentDisabled="props.groupProps.parentDisabled || parts.disabled"
-      :parentMuted="props.groupProps.parentMuted || parts.muted"
+      :parentDisabled="groupProps.parentDisabled || parts.disabled"
+      :parentMuted="groupProps.parentMuted || parts.muted"
       :translations="translations"
       :shiftUpDisabled="child.shiftUpDisabled"
       :shiftDownDisabled="child.shiftDownDisabled"
-      :context="props.groupProps.context" />
+      :context="groupProps.context" />
   </template>
 </template>

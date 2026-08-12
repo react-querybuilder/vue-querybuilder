@@ -17,6 +17,13 @@ import ValueSelector from './ValueSelector.vue';
  * `mergeControlElements` leaves a key unset when neither the props, the inherited context, nor
  * the defaults supply a component, so every one of the 24 keys must have an entry here. Every
  * key resolves to a real component; none maps to `nullComponent`.
+ *
+ * `rule` and `ruleGroup` are **accessors, not values**. This module sits in an import cycle —
+ * `Rule` renders `RuleSubQuery`, which needs these defaults for the subquery's own query builder
+ * — and in the emitted ESM this module is evaluated before `Rule.js` finishes, so a plain
+ * `rule: Rule` captures the temporal-dead-zone `undefined` and the query builder silently renders
+ * no rules at all. An accessor reads the live binding at first access, which is during `setup`,
+ * long after every module has evaluated. `dist-cycles.test.ts` guards it.
  */
 export const defaultControlElements = {
   actionElement: ActionElement,
@@ -36,8 +43,12 @@ export const defaultControlElements = {
   operatorSelector: ValueSelector,
   removeGroupAction: ActionElement,
   removeRuleAction: ActionElement,
-  rule: Rule,
-  ruleGroup: RuleGroup,
+  get rule() {
+    return Rule;
+  },
+  get ruleGroup() {
+    return RuleGroup;
+  },
   shiftActions: ShiftActions,
   undoRedoActions: UndoRedoActions,
   valueEditor: ValueEditor,

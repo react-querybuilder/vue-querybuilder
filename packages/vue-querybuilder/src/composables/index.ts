@@ -3,6 +3,7 @@
  * `QueryBuilder` props and a `QueryManager`.
  */
 
+export * from './accessors.js';
 export * from './context.js';
 export * from './useQueryActions.js';
 export * from './useQueryBuilder.js';

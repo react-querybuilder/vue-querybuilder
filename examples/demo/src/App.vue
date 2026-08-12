@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue';
 import {
   formatQuery,
-  QueryBuilder,
   type Field,
   type RuleGroupType,
   type RuleGroupTypeIC,
@@ -127,14 +126,14 @@ const output = computed(() => formatQuery(activeQuery.value, format.value));
 
   <div class="demo-layout">
     <div>
-      <!-- `QueryBuilder` is generic in the query type, so an independent-combinators query
-           binds directly, with no cast. -->
-      <QueryBuilder
+      <!-- Registered globally by `QueryBuilderPlugin`; see `main.ts`. `QueryBuilder` is generic
+           in the query type, so an independent-combinators query binds directly, with no cast. -->
+      <QbQueryBuilder
         v-if="independentCombinators"
         v-model:query="queryIC"
         :fields="fields"
         v-bind="flags" />
-      <QueryBuilder v-else v-model:query="query" :fields="fields" v-bind="flags" />
+      <QbQueryBuilder v-else v-model:query="query" :fields="fields" v-bind="flags" />
     </div>
 
     <div class="demo-output">

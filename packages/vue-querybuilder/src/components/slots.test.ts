@@ -27,6 +27,7 @@ const renderWithSlots = (slotTemplate: string, qbAttrs = '') =>
 
 describe('slotToComponent', () => {
   it('returns the same component for the same slot', () => {
+    // oxlint-disable-next-line unicorn/consistent-function-scoping
     const slot = () => [h('span')];
     expect(slotToComponent(slot)).toBe(slotToComponent(slot));
   });

@@ -88,14 +88,15 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
 
 - Build class strings with core's `clsx` exclusively. **Never** template interpolation — it
   introduces whitespace differences.
-- `Label` and `slotToComponent` are **functional components, never SFCs**. An SFC emits whitespace
+- `QueryBuilderLabel` and `slotToComponent` are **functional components, never SFCs**. An SFC emits whitespace
   text nodes, which breaks byte-level parity.
 - Element order and conditional rendering are specified by React's `Rule.tsx` / `RuleGroup.tsx`.
   Read them as a spec, not as code to translate.
 - Template whitespace is safe between elements — Vue's `condense` mode drops a whitespace-only
   text node that contains a newline when it is leading, trailing, or between two elements. It is
   **not** safe next to a `{{ }}` interpolation, which condenses to a single space instead. Render
-  every label through `Label` (a component, so it counts as an element) rather than interpolating.
+  every label through `QueryBuilderLabel` (a component, so it counts as an element) rather than
+  interpolating.
 - Every default control sets `inheritAttrs: false`. `Rule`/`RuleGroup` hand each subcomponent a
   common prop bag (`rule`, `rules`, `ruleOrGroup`, `fieldData`, ...) that most of them do not
   declare; without this those land on the DOM as stray attributes React never emits.
@@ -112,12 +113,23 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
 - Resolution order per key: levels props → context → defaults; within a level, keyed slot → keyed
   component → bulk slot → bulk component. A `null` entry short-circuits at its own level.
 
+### Module cycles
+
+`defaultControlElements` is in an import cycle (`Rule` → `RuleSubQuery` → the defaults → `Rule`).
+Its `rule` and `ruleGroup` entries **must stay accessors, not values**: bundlers and Vite's dev
+server tolerate a plain `rule: Rule`, but Node's ESM evaluation order for the published `dist`
+binds it to the temporal-dead-zone `undefined`, and the failure is silent — every group renders
+and no rule does. `scripts/check-dist-runtime.ts` loads the built artifact through a real ESM
+loader and guards it; it runs as part of `check:exports`.
+
 ### Reactivity
 
 - The query is a `shallowRef`. A deep proxy defeats reference comparisons and is rejected by the manager's Immer deep-freeze.
 - Always `toRaw()` a query before handing it to the manager.
 - Likewise `toRaw()` the **manager itself** before calling it. `QueryManager` keeps its history in private class fields, which a reactive `Proxy` cannot read through (`Cannot read private member #past`). `schema` is an ordinary computed value in normal use, but Vue Test Utils wraps mount props in `reactive`, and nothing stops a consumer from doing the same.
-- An internal component that receives a `useRule`/`useRuleGroup` return object as a **prop** should unwrap it with `reactive()`. Vue auto-unwraps refs only for top-level `setup` bindings, not through a prop, so the template would otherwise need `.value` everywhere. `reactive()` on a container of refs yields each `.value` directly and leaves plain functions alone. Forward the original object, not the proxy, when passing it further down.
+- A `useRule`/`useRuleGroup` return object reaches the internal components through **provide/inject**, not as a prop — see `src/internal/parts.ts`. It is unwrapped with `reactive()` exactly once, at the provider: Vue auto-unwraps refs only for top-level `setup` bindings, and `reactive()` on a container of refs yields each `.value` directly while leaving plain handler functions alone. Consumers inject and destructure; none of them calls `reactive()` itself.
+- `RuleSubQuery` provides the subquery's group under **both** the subquery key and the group key, so the `RuleGroupHeader`/`RuleGroupBody` that `RuleComponents` renders resolve the subquery's group rather than the enclosing one. `Rule` correspondingly shadows the subquery key with `undefined`, so a rule nested inside a subquery is not mistaken for one.
+- The **public** injection accessors (`useSchema`, `useQueryBuilderActions`, `useCurrentRule`, `useCurrentRuleGroup`, `useCurrentPath`) use their own keys in `src/composables/accessors.ts`. Keep them separate from the internal keys: the internal shape is not public API. `Rule`/`RuleGroup` re-provide schema and actions at every level so a subquery's descendants see the subquery's own.
 - Effects that write back into state use `watch` with an **explicit dependency array** and `flush: 'post'` — never `watchEffect`, whose tracked set changes across branches.
 - Never pair `immediate: true` with `flush: 'post'`. Vue runs an immediate callback _synchronously at watch creation_, ignoring the flush setting, which would apply a write before first render and break DOM parity. Defer the mount-time run with `nextTick` instead, guarded by an `onScopeDispose` flag.
 
@@ -168,7 +180,9 @@ friends) is per-instance. Drop the override once `@testing-library/vue` moves to
 **Standing rule: every gate must be proven to fail.** When a step adds a gate, deliberately break
 it, record that it went red, then revert. A gate that cannot fail is worse than none.
 
-Current gates: `fmt:check`, `build`, `check` (library + examples), `check:exports`, `lint`,
+Current gates: `fmt:check`, `build`, `check` (library + examples), `check:exports` (dist relative
+specifiers, `exports`-map targets and condition order, built-artifact module-cycle check, `attw`),
+`lint`,
 `test:coverage` (three thresholds), `conformance` (DOM parity, 232 tests), `test:ssr`, and the
 a11y suite (`src/components/a11y.test.ts`, part of the default run).
 

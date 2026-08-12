@@ -40,6 +40,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./resolver": {
+      "types": "./dist/resolver.d.ts",
+      "import": "./dist/resolver.js"
+    },
     "./dist/*.css": "./dist/*.css",
     "./dist/*.scss": "./dist/*.scss",
     "./package.json": "./package.json"
@@ -52,7 +56,7 @@
     "build:types": "vue-tsc -p tsconfig.build.json --emitDeclarationOnly --declarationDir dist && find dist \\( -name '*.test.*' -o -name '*.test-d.*' -o -name '*.spec.*' \\) -delete && bun ./scripts/normalize-sfc-declarations.ts",
     "build:css": "mkdir -p dist/styles && cp ../../node_modules/@react-querybuilder/core/dist/*.scss dist && cp ../../node_modules/@react-querybuilder/core/dist/styles/*.scss dist/styles && cp -f src/styles/*.scss dist/styles 2>/dev/null || true; bun sass --style=compressed dist",
     "check": "vue-tsc --noEmit -p tsconfig.json",
-    "check:exports": "bun run ./scripts/check-dist-specifiers.ts && attw --pack . --profile esm-only",
+    "check:exports": "bun run ./scripts/check-dist-specifiers.ts && bun run ./scripts/check-dist-runtime.ts && attw --pack . --profile esm-only",
     "conformance": "bun run conformance:fetch && bun run conformance:test",
     "conformance:fetch": "bun ./scripts/fetch-fixtures.ts",
     "conformance:test": "vitest run --config vitest.conformance.config.ts"

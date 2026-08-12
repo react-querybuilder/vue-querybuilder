@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { TestID } from '@react-querybuilder/core';
-import { computed, reactive } from 'vue';
-import type { UseRuleGroupReturn } from '../composables/useRuleGroup.js';
-import type { RuleGroupProps } from '../types/props.js';
+import { computed } from 'vue';
+import { useRuleGroupInternals } from './parts.js';
 
 /**
  * The controls in a rule group's header, without the wrapping `<div>`.
@@ -10,17 +9,16 @@ import type { RuleGroupProps } from '../types/props.js';
  * Port of React Query Builder's `RuleGroupHeaderComponents` (`RuleGroup.tsx`). Internal rather
  * than a control element — there is no `ruleGroupHeaderElements` control element — and a
  * separate component only so that a rule with a subquery can reuse it.
+ *
+ * Everything it renders from comes through injection — see `parts.ts`.
  */
 defineOptions({ name: 'RuleGroupHeader', inheritAttrs: false });
 
-const props = defineProps<{ groupProps: RuleGroupProps; parts: UseRuleGroupReturn }>();
+const { props: groupProps, parts } = useRuleGroupInternals();
 
-// See `RuleComponents.vue` for why the parts object is unwrapped with `reactive`.
-const parts = reactive(props.parts);
-
-const schema = computed(() => props.groupProps.schema);
-const translations = computed(() => props.groupProps.translations);
-const path = computed(() => props.groupProps.path);
+const schema = computed(() => groupProps.value.schema);
+const translations = computed(() => groupProps.value.translations);
+const path = computed(() => groupProps.value.path);
 const controls = computed(() => schema.value.controls);
 
 /** The props every subcomponent of a group receives. */
@@ -28,7 +26,7 @@ const common = computed(() => ({
   level: path.value.length,
   path: path.value,
   disabled: parts.disabled,
-  context: props.groupProps.context,
+  context: groupProps.value.context,
   validation: parts.validationResult,
   schema: schema.value,
 }));
@@ -81,8 +79,8 @@ const undoRedoClassNames = computed(() =>
     :className="parts.classNames.shiftActions"
     :shiftUp="parts.shiftGroupUp"
     :shiftDown="parts.shiftGroupDown"
-    :shiftUpDisabled="props.groupProps.shiftUpDisabled"
-    :shiftDownDisabled="props.groupProps.shiftDownDisabled"
+    :shiftUpDisabled="groupProps.shiftUpDisabled"
+    :shiftDownDisabled="groupProps.shiftDownDisabled"
     :ruleOrGroup="parts.ruleGroup" />
   <component
     :is="controls.combinatorSelector"
@@ -149,9 +147,7 @@ const undoRedoClassNames = computed(() =>
     :className="parts.classNames.lockGroup"
     :handleOnClick="parts.toggleLockGroup"
     :rules="parts.ruleGroup.rules"
-    :disabledTranslation="
-      props.groupProps.parentDisabled ? undefined : translations.lockGroupDisabled
-    "
+    :disabledTranslation="groupProps.parentDisabled ? undefined : translations.lockGroupDisabled"
     :ruleOrGroup="parts.ruleGroup" />
   <component
     :is="controls.muteGroupAction"
