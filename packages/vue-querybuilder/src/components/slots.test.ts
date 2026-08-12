@@ -136,10 +136,7 @@ describe('control slots', () => {
     const Provider = defineComponent({
       components: { QueryBuilder },
       setup(_, { slots }) {
-        provideQueryBuilderContext(() => ({
-          // The stand-in declares no props, so it is not a structural `Component<ValueEditorProps>`.
-          controlElements: { valueEditor: ContextComponent as never },
-        }));
+        provideQueryBuilderContext(() => ({ controlElements: { valueEditor: ContextComponent } }));
         return () => slots.default?.();
       },
     });

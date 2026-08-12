@@ -239,9 +239,9 @@ const path = useCurrentPath();
 them is ever defined at a time. Inside a subquery, all five accessors resolve to the subquery's
 own state rather than the enclosing query builder's.
 
-One caveat: a `controlElements` entry is typed `Component<P>` with `P` required, so a component
-that declares no props is not assignable there without a cast. A **slot** has no such constraint,
-which is another reason slots lead this page.
+This works for a `controlElements` entry as well as a slot: an entry is typed `ControlComponent`,
+which accepts any component regardless of the props it declares. The props each control receives
+are listed in `ControlPropsMap`.
 
 Replacing `rule` or `ruleGroup` wholesale is a larger job, because those components own the class
 names, the accessible description, and the child paths. Rather than recomputing any of that, use

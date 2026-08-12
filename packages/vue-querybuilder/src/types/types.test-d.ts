@@ -12,9 +12,10 @@ import type {
   RuleGroupTypeIC,
   RuleType,
 } from '@react-querybuilder/core';
-import type { Component, Slot } from 'vue';
+import type { DefineComponent, FunctionalComponent, Slot } from 'vue';
 import type {
   ActionProps,
+  ControlComponent,
   ControlElementsProp,
   ControlSlots,
   Controls,
@@ -72,7 +73,7 @@ assertType<boolean | undefined>(stdProps.independentCombinators);
 // #region Controls
 declare const controls: Controls<FullField, string>;
 // Every entry is present and non-nullable after finalization, including `undoRedoActions`.
-assertType<Component<ActionProps>>(controls.actionElement);
+assertType<ControlComponent>(controls.actionElement);
 assertType<NonNullable<typeof controls.undoRedoActions>>(controls.undoRedoActions);
 assertType<NonNullable<typeof controls.valueEditor>>(controls.valueEditor);
 // @ts-expect-error finalized controls are never nullish
@@ -89,6 +90,31 @@ assertType<unknown>(controlElements.dragHandle);
 assertType<unknown>(controlElements.ruleGroupHeaderElements);
 // @ts-expect-error `ruleGroupBodyElements` is not a control element in this package
 assertType<unknown>(controlElements.ruleGroupBodyElements);
+// `null` is rejected for the entries that always have to render something.
+// @ts-expect-error `actionElement` is not nullable
+controlElements.actionElement = null;
+// @ts-expect-error `rule` is not nullable
+controlElements.rule = null;
+// @ts-expect-error `ruleGroup` is not nullable
+controlElements.ruleGroup = null;
+// @ts-expect-error `valueSelector` is not nullable
+controlElements.valueSelector = null;
+
+// A replacement may declare only the props it uses, or none at all — the parent always passes
+// the full bag, and the rest is reachable by injection.
+declare const noPropsControl: DefineComponent<{}>;
+declare const somePropsControl: DefineComponent<{ label?: string | undefined }>;
+declare const fnControl: FunctionalComponent;
+controlElements.actionElement = noPropsControl;
+controlElements.actionElement = somePropsControl;
+controlElements.actionElement = fnControl;
+controlElements.rule = noPropsControl;
+controlElements.valueEditor = noPropsControl;
+// Still has to be a component.
+// @ts-expect-error
+controlElements.actionElement = 42;
+// @ts-expect-error
+controlElements.actionElement = 'ActionElement';
 // #endregion
 
 // #region Rule/RuleGroup props — no deprecated per-prop fallbacks

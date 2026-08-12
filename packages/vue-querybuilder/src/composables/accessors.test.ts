@@ -1,8 +1,9 @@
-import type { RuleGroupType } from '@react-querybuilder/core';
+import type { FullField, RuleGroupType } from '@react-querybuilder/core';
 import { render } from '@testing-library/vue';
 import { describe, expect, it, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import QueryBuilder from '../components/QueryBuilder.vue';
+import type { ControlPropsMap } from '../types/controls.js';
 import {
   useCurrentPath,
   useCurrentRule,
@@ -30,9 +31,9 @@ const fieldNames = (s: Seen): string[] =>
  * A control that declares no props at all and reads everything through injection — the shape the
  * accessors exist to make possible.
  */
-// Cast at every use site: `Controls[...]` is `Component<P>` with `P` required, so a component
-// that declares no props at all is not assignable even though it renders fine. The prop bag is
-// still the typed contract; injection is the runtime convenience.
+// No cast needed: a `controlElements` entry is `ControlComponent`, which does not constrain the
+// props a replacement declares. The prop bag is still the documented contract; injection is the
+// runtime convenience.
 const Probe = defineComponent({
   name: 'Probe',
   inheritAttrs: false,
@@ -68,10 +69,10 @@ const fields = [
 ];
 
 /** Renders a query builder with `Probe` substituted for one control element. */
-const renderWithProbe = (controlKey: string) => {
+const renderWithProbe = (controlKey: keyof ControlPropsMap<FullField, string>) => {
   seen.length = 0;
   return render(QueryBuilder, {
-    props: { fields, defaultQuery: query, controlElements: { [controlKey]: Probe as never } },
+    props: { fields, defaultQuery: query, controlElements: { [controlKey]: Probe } },
   });
 };
 
@@ -113,14 +114,14 @@ describe('injection accessors inside a query builder', () => {
   it('tracks the current rule reactively', async () => {
     seen.length = 0;
     const { getAllByTestId, rerender } = render(QueryBuilder, {
-      props: { fields, query, controlElements: { valueEditor: Probe as never } },
+      props: { fields, query, controlElements: { valueEditor: Probe } },
     });
     expect(getAllByTestId('probe')).not.toHaveLength(0);
     const before = seen[0].rule!.value.value;
     await rerender({
       fields,
       query: { ...query, rules: [{ ...query.rules[0], value: 'Joe' }, query.rules[1]] },
-      controlElements: { valueEditor: Probe as never },
+      controlElements: { valueEditor: Probe },
     });
     expect(before).toBe('Steve');
     expect(seen[0].rule!.value.value).toBe('Joe');
@@ -186,7 +187,7 @@ describe('injection accessors inside a subquery', () => {
             },
           ],
         },
-        controlElements: { valueEditor: Probe as never },
+        controlElements: { valueEditor: Probe },
       },
     });
     // Only the subquery's rule renders a value editor; its schema is the subquery's.

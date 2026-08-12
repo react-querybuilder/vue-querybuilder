@@ -37,8 +37,7 @@ import type {
   ValueSourceFlexibleOptions,
   ValueSources,
 } from '@react-querybuilder/core';
-import type { Component } from 'vue';
-import type { ControlElementsProp, ControlSlots } from './controls.js';
+import type { ControlComponent, ControlElementsProp, ControlSlots } from './controls.js';
 import type { Schema } from './schema.js';
 import type { LabelNode, Translations, TranslationWithLabel } from './translations.js';
 
@@ -157,8 +156,10 @@ export interface FieldSelectorProps<F extends FullField = FullField>
 export interface MatchModeEditorProps
   extends BaseSelectorProps<FullOption>, CommonRuleSubComponentProps {
   match: MatchConfig;
-  selectorComponent?: Component<ValueSelectorProps>;
-  numericEditorComponent?: Component<ValueEditorProps>;
+  /** Receives {@link ValueSelectorProps}. */
+  selectorComponent?: ControlComponent;
+  /** Receives {@link ValueEditorProps}. */
+  numericEditorComponent?: ControlComponent;
   thresholdPlaceholder?: string;
   classNames: { matchMode: string; matchThreshold: string };
   options: FullOptionList<FullOption<MatchMode>>;
@@ -317,7 +318,8 @@ export interface ShiftActionsProps extends CommonSubComponentProps {
  * @group Props
  */
 export interface InlineCombinatorProps extends CombinatorSelectorProps {
-  component: Component<CombinatorSelectorProps>;
+  /** Receives {@link CombinatorSelectorProps}. */
+  component: ControlComponent;
 }
 
 /**
@@ -341,7 +343,8 @@ export interface ValueEditorProps<F extends FullField = FullField, O extends str
   listsAsArrays?: boolean;
   parseNumbers?: ParseNumbersPropConfig;
   separator?: LabelNode;
-  selectorComponent?: Component<ValueSelectorProps>;
+  /** Receives {@link ValueSelectorProps}. */
+  selectorComponent?: ControlComponent;
   /**
    * Only pass `true` if the value editor reset watcher (`useValueEditorReset`) has already run
    * in a parent/ancestor component.
