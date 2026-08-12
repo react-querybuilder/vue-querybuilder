@@ -1,51 +1,42 @@
 <script setup lang="ts">
 import { TestID } from '@react-querybuilder/core';
-import { computed, reactive } from 'vue';
-import type { UseRuleReturn } from '../composables/useRule.js';
-import type { UseRuleGroupReturn } from '../composables/useRuleGroup.js';
-import type { RuleGroupProps, RuleProps } from '../types/props.js';
+import { computed } from 'vue';
+import { useRuleInternals, useSubQueryInternals } from './parts.js';
 import RuleGroupBody from './RuleGroupBody.vue';
 import RuleGroupHeader from './RuleGroupHeader.vue';
 
 /**
  * The controls that make up a rule, without the wrapping `<div>`.
  *
- * Port of React Query Builder's `RuleComponents` (`Rule.tsx`). When `subQueryProps`/
- * `subQueryParts` are supplied — by `RuleSubQuery.vue` — the subquery's group header and body
- * are rendered in `<div>`s around the rule's own action buttons. That wrapper is React's
+ * Port of React Query Builder's `RuleComponents` (`Rule.tsx`). When the enclosing rule has a
+ * subquery — i.e. when `RuleSubQuery.vue` provides one — the subquery's group header and body are
+ * rendered in `<div>`s around the rule's own action buttons. That wrapper is React's
  * `RuleWithSubQueryGroupComponentsWrapper`, written out literally here because it is not
  * customizable.
  *
  * This is an internal component, not a control element: it exists only so that a rule with a
  * subquery can reuse it. The DOM for a rule without a subquery is identical either way.
+ *
+ * Everything it renders from comes through injection — see `parts.ts`.
  */
 defineOptions({ name: 'RuleComponents', inheritAttrs: false });
 
-const props = defineProps<{
-  ruleProps: RuleProps;
-  parts: UseRuleReturn;
-  subQueryProps?: RuleGroupProps;
-  subQueryParts?: UseRuleGroupReturn;
-}>();
+const { props: ruleProps, parts } = useRuleInternals();
+// `undefined` unless the enclosing rule has a subquery. `RuleSubQuery` provides the same object
+// under the group key, so the `RuleGroupHeader`/`RuleGroupBody` below resolve to this group.
+const subQueryParts = useSubQueryInternals()?.parts;
 
-// `useRule` returns refs, which a template does not auto-unwrap through a prop. `reactive`
-// unwraps every ref member on access and leaves the plain handler functions alone.
-const parts = reactive(props.parts);
-const subQueryParts = computed(() =>
-  props.subQueryParts ? reactive(props.subQueryParts) : undefined
-);
-
-const schema = computed(() => props.ruleProps.schema);
-const rule = computed(() => props.ruleProps.rule);
-const translations = computed(() => props.ruleProps.translations);
+const schema = computed(() => ruleProps.value.schema);
+const rule = computed(() => ruleProps.value.rule);
+const translations = computed(() => ruleProps.value.translations);
 const controls = computed(() => schema.value.controls);
 
 /** The props every subcomponent of a rule receives. */
 const common = computed(() => ({
-  level: props.ruleProps.path.length,
-  path: props.ruleProps.path,
+  level: ruleProps.value.path.length,
+  path: ruleProps.value.path,
   disabled: parts.disabled,
-  context: props.ruleProps.context,
+  context: ruleProps.value.context,
   validation: parts.ctx.validationResult,
   schema: schema.value,
   rule: rule.value,
@@ -91,8 +82,8 @@ const fieldIsSelected = computed(
     :ruleOrGroup="rule"
     :shiftUp="parts.shiftRuleUp"
     :shiftDown="parts.shiftRuleDown"
-    :shiftUpDisabled="props.ruleProps.shiftUpDisabled"
-    :shiftDownDisabled="props.ruleProps.shiftDownDisabled" />
+    :shiftUpDisabled="ruleProps.shiftUpDisabled"
+    :shiftDownDisabled="ruleProps.shiftDownDisabled" />
   <component
     :is="controls.fieldSelector"
     v-if="parts.showFieldSelector"
@@ -165,8 +156,8 @@ const fieldIsSelected = computed(
       </template>
     </template>
   </template>
-  <div v-if="subQueryParts && props.subQueryProps" :class="subQueryParts.classNames.header">
-    <RuleGroupHeader :groupProps="props.subQueryProps" :parts="props.subQueryParts!" />
+  <div v-if="subQueryParts" :class="subQueryParts.classNames.header">
+    <RuleGroupHeader />
   </div>
   <component
     :is="controls.cloneRuleAction"
@@ -188,9 +179,7 @@ const fieldIsSelected = computed(
     :className="parts.classNames.lockRule"
     :ruleOrGroup="rule"
     :handleOnClick="parts.toggleLockRule"
-    :disabledTranslation="
-      props.ruleProps.parentDisabled ? undefined : translations.lockRuleDisabled
-    " />
+    :disabledTranslation="ruleProps.parentDisabled ? undefined : translations.lockRuleDisabled" />
   <component
     :is="controls.muteRuleAction"
     v-if="schema.showMuteButtons"
@@ -210,7 +199,7 @@ const fieldIsSelected = computed(
     :className="parts.classNames.removeRule"
     :ruleOrGroup="rule"
     :handleOnClick="parts.removeRule" />
-  <div v-if="subQueryParts && props.subQueryProps" :class="subQueryParts.classNames.body">
-    <RuleGroupBody :groupProps="props.subQueryProps" :parts="props.subQueryParts!" />
+  <div v-if="subQueryParts" :class="subQueryParts.classNames.body">
+    <RuleGroupBody />
   </div>
 </template>

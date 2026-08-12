@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { FullField, FullOption, RuleGroupType } from '@react-querybuilder/core';
 import { isRuleGroup, prepareOptionList, rootPath } from '@react-querybuilder/core';
-import { computed, reactive } from 'vue';
+import { computed } from 'vue';
+import { defaultControlElements } from '../components/defaultControlElements.js';
 import { useQueryBuilder } from '../composables/useQueryBuilder.js';
-import type { UseRuleReturn } from '../composables/useRule.js';
 import { useRuleGroup } from '../composables/useRuleGroup.js';
-import type { QueryBuilderProps, RuleGroupProps, RuleProps } from '../types/props.js';
-import { defaultControlElements } from './defaultControlElements.js';
+import type { QueryBuilderProps, RuleGroupProps } from '../types/props.js';
+import { provideSubQueryInternals, useRuleInternals } from './parts.js';
 import RuleComponents from './RuleComponents.vue';
 
 /**
@@ -24,13 +24,10 @@ defineOptions({ name: 'RuleSubQuery', inheritAttrs: false });
 
 const defaultSubproperties: FullOption[] = [{ name: '', value: '', label: '' }];
 
-const props = defineProps<{ ruleProps: RuleProps; parts: UseRuleReturn }>();
+const { props: ruleProps, parts } = useRuleInternals();
 
-// See `RuleComponents.vue` for why the parts object is unwrapped with `reactive`.
-const parts = reactive(props.parts);
-
-const schema = computed(() => props.ruleProps.schema);
-const rule = computed(() => props.ruleProps.rule);
+const schema = computed(() => ruleProps.value.schema);
+const rule = computed(() => ruleProps.value.rule);
 
 const subQueryBuilderProps = computed(
   () =>
@@ -42,7 +39,7 @@ const subQueryBuilderProps = computed(
 const subproperties = computed(
   () =>
     prepareOptionList<FullField>({
-      placeholder: props.ruleProps.translations.fields as never,
+      placeholder: ruleProps.value.translations.fields as never,
       optionList: (parts.fieldData.subproperties ??
         subQueryBuilderProps.value.fields ??
         defaultSubproperties) as never,
@@ -84,17 +81,15 @@ const subGroupProps = computed(
       parentDisabled: subState.queryDisabled.value,
       shiftUpDisabled: true,
       shiftDownDisabled: true,
-      context: props.ruleProps.context,
+      context: ruleProps.value.context,
     }) as RuleGroupProps
 );
 
 const subGroupParts = useRuleGroup(() => subGroupProps.value);
+
+provideSubQueryInternals(subGroupProps, subGroupParts);
 </script>
 
 <template>
-  <RuleComponents
-    :ruleProps="props.ruleProps"
-    :parts="props.parts"
-    :subQueryProps="subGroupProps"
-    :subQueryParts="subGroupParts" />
+  <RuleComponents />
 </template>

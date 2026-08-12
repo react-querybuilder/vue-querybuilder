@@ -44,6 +44,39 @@ const query = ref<RuleGroupType>({
 </template>
 ```
 
+### Global registration
+
+Named imports are the default and need no setup. If you would rather register the components
+globally, install the plugin:
+
+```ts
+// main.ts
+import { createApp } from 'vue';
+import { QueryBuilderPlugin } from '@react-querybuilder/vue';
+import '@react-querybuilder/vue/dist/query-builder.css';
+import App from './App.vue';
+
+createApp(App).use(QueryBuilderPlugin).mount('#app');
+```
+
+`QueryBuilder` and the ten default control elements are registered under a `Qb` prefix —
+`<QbQueryBuilder>`, `<QbValueEditor>`, and so on. Pass `{ prefix: '' }` for the bare names.
+
+For [`unplugin-vue-components`](https://github.com/unplugin/unplugin-vue-components), use the
+resolver instead, and skip the plugin:
+
+```ts
+// vite.config.ts
+import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vite';
+import Components from 'unplugin-vue-components/vite';
+import { QueryBuilderResolver } from '@react-querybuilder/vue/resolver';
+
+export default defineConfig({
+  plugins: [vue(), Components({ resolvers: [QueryBuilderResolver()] })],
+});
+```
+
 ## Driving the query
 
 | Approach                      | Use when                                                |

@@ -32,7 +32,8 @@ None of the following is planned for v1:
   per-prop fallbacks `RuleGroupProps.combinator`/`rules`/`not` and
   `RuleProps.field`/`operator`/`value`/`valueSource`, are all absent. Use `ruleGroup` and `rule`.
 - **`ruleGroupHeaderElements` / `ruleGroupBodyElements`.** The equivalent internal components
-  exist (`RuleGroupHeader`, `RuleGroupBody`) but are not `controlElements` keys.
+  exist (`RuleGroupHeader`, `RuleGroupBody`) but are not `controlElements` keys, and are not
+  exported.
 
 ## 3. State management
 
@@ -195,15 +196,32 @@ Additional deltas:
   which is always `"disabled"`.
 - **`ValueEditorProps.skipHook` keeps its name** but now refers to the value-editor reset
   _watcher_ rather than a React hook.
-- **`ControlSlots`** is a mapped type over `Controls`: for every key `K`, a
-  `Slot<ControlProps<Controls[K]>>`. The slot list and its argument types therefore cannot drift
-  from the components the slots replace. `QueryBuilderContextProps.slots` carries it.
+- **`ControlPropsMap` is the single source of truth for the subcomponent list.** `ControlElementsProp`,
+  `Controls`, and `ControlSlots` are all mapped types over it, so the key set and the slot argument
+  types cannot drift apart. `QueryBuilderContextProps.slots` carries `ControlSlots`.
+- **A `controlElements` entry is `ControlComponent` — unparameterized — where React Query Builder
+  has `ComponentType<P>`.** A replacement may declare only the props it uses, or none at all: the
+  parent always passes the full prop bag, and
+  `useSchema`/`useQueryBuilderActions`/`useCurrentRule`/`useCurrentRuleGroup`/`useCurrentPath`
+  reach the rest by injection. Vue's `Component<P>` cannot express that, and does not enforce what
+  it appears to: it passes `P` through as the constructor member's _instance_ type, so a component
+  declaring nothing in common with `P` is rejected by TypeScript's weak-type detection, while a
+  component declaring a prop of the **wrong** type still slips through the options-object member of
+  the union. Since it rejects the useful case and misses the broken one, the parameter is dropped
+  rather than kept for show. `ControlPropsMap` documents what each control receives, and slot
+  arguments _are_ exactly typed.
 - **`RuleTypeOf<RG>`** recovers the rule type from a query type. `QueryBuilder` is generic in
   `RG`, `F`, `O`, and `C` only — the rule type is determined by the query, not chosen
   independently — so the component uses this to fill `QueryBuilderPropsBase`'s explicit `R`.
 - **`Rule` and `RuleGroup` are generic too** (`F`/`O`), matching React. The parameters are a
   consumer-facing convenience; internally the props are widened to the default instantiation,
   because `Schema`'s resolvers are invariant in their option types.
+- **`Label` is `QueryBuilderLabel`, and `LabelProps` is `QueryBuilderLabelProps`.** React Query
+  Builder has no equivalent export; `Label` was too generic a name for a package that can be
+  registered globally.
+- **`RuleComponents`, `RuleGroupHeader`, `RuleGroupBody`, and `RuleSubQuery` are internal.**
+  They and their prop types are not exported. They read everything they render through
+  provide/inject and cannot be mounted outside a `Rule`/`RuleGroup`.
 - **A generic SFC's props parameter carries an index signature.** `vue-tsc` types it as
   `Props & Record<string, unknown>`, so an interface-typed variable is not directly assignable
   when the component is invoked through `h()`. Spread it, or add the index signature. Templates

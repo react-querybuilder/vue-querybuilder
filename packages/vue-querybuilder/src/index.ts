@@ -8,6 +8,7 @@
 export * from '@react-querybuilder/core';
 export * from './components/index.js';
 export * from './composables/index.js';
-export { Label } from './internal/Label.js';
-export type { LabelProps } from './internal/Label.js';
+export { QueryBuilderLabel } from './internal/QueryBuilderLabel.js';
+export type { QueryBuilderLabelProps } from './internal/QueryBuilderLabel.js';
+export * from './plugin.js';
 export type * from './types/index.js';

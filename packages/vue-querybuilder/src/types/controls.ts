@@ -18,7 +18,11 @@ import type {
 } from './props.js';
 
 /**
- * Subcomponents.
+ * The props each subcomponent receives.
+ *
+ * The single source of truth for the subcomponent list: {@link ControlElementsProp},
+ * {@link Controls}, and {@link ControlSlots} are all derived from it, so the key set, the
+ * component prop types, and the slot argument types cannot drift apart.
  *
  * There is no `dragHandle` entry: drag-and-drop is a non-goal. There are no
  * `ruleGroupHeaderElements`/`ruleGroupBodyElements` entries either; to customize the contents of
@@ -26,152 +30,197 @@ import type {
  *
  * @group Props
  */
-export type ControlElementsProp<F extends FullField, O extends string> = Partial<{
+export type ControlPropsMap<F extends FullField, O extends string> = {
   /**
    * Default component for all button-type controls.
    *
    * @default ActionElement
    */
-  actionElement: Component<ActionProps>;
+  actionElement: ActionProps;
   /**
    * Adds a sub-group to the current group.
    *
    * @default ActionElement
    */
-  addGroupAction: Component<ActionProps> | null;
+  addGroupAction: ActionProps;
   /**
    * Adds a rule to the current group.
    *
    * @default ActionElement
    */
-  addRuleAction: Component<ActionProps> | null;
+  addRuleAction: ActionProps;
   /**
    * Clones the current group.
    *
    * @default ActionElement
    */
-  cloneGroupAction: Component<ActionProps> | null;
+  cloneGroupAction: ActionProps;
   /**
    * Clones the current rule.
    *
    * @default ActionElement
    */
-  cloneRuleAction: Component<ActionProps> | null;
+  cloneRuleAction: ActionProps;
   /**
    * Selects the `combinator` property for the current group, or the current independent
    * combinator value.
    *
    * @default ValueSelector
    */
-  combinatorSelector: Component<CombinatorSelectorProps> | null;
+  combinatorSelector: CombinatorSelectorProps;
   /**
    * Selects the `field` property for the current rule.
    *
    * @default ValueSelector
    */
-  fieldSelector: Component<FieldSelectorProps<F>> | null;
+  fieldSelector: FieldSelectorProps<F>;
   /**
    * A small wrapper around the `combinatorSelector` component.
    *
    * @default InlineCombinator
    */
-  inlineCombinator: Component<InlineCombinatorProps> | null;
+  inlineCombinator: InlineCombinatorProps;
   /**
    * Locks the current group (sets the `disabled` property to `true`).
    *
    * @default ActionElement
    */
-  lockGroupAction: Component<ActionProps> | null;
+  lockGroupAction: ActionProps;
   /**
    * Locks the current rule (sets the `disabled` property to `true`).
    *
    * @default ActionElement
    */
-  lockRuleAction: Component<ActionProps> | null;
+  lockRuleAction: ActionProps;
   /**
    * Mutes the current group (sets the `muted` property to `true`).
    *
    * @default ActionElement
    */
-  muteGroupAction: Component<ActionProps> | null;
+  muteGroupAction: ActionProps;
   /**
    * Mutes the current rule (sets the `muted` property to `true`).
    *
    * @default ActionElement
    */
-  muteRuleAction: Component<ActionProps> | null;
+  muteRuleAction: ActionProps;
   /**
    * Selects the `match` property for the current rule.
    *
    * @default MatchModeEditor
    */
-  matchModeEditor: Component<MatchModeEditorProps> | null;
+  matchModeEditor: MatchModeEditorProps;
   /**
    * Toggles the `not` property of the current group between `true` and `false`.
    *
    * @default NotToggle
    */
-  notToggle: Component<NotToggleProps> | null;
+  notToggle: NotToggleProps;
   /**
    * Selects the `operator` property for the current rule.
    *
    * @default ValueSelector
    */
-  operatorSelector: Component<OperatorSelectorProps> | null;
+  operatorSelector: OperatorSelectorProps;
   /**
    * Removes the current group from its parent group's `rules` array.
    *
    * @default ActionElement
    */
-  removeGroupAction: Component<ActionProps> | null;
+  removeGroupAction: ActionProps;
   /**
    * Removes the current rule from its parent group's `rules` array.
    *
    * @default ActionElement
    */
-  removeRuleAction: Component<ActionProps> | null;
+  removeRuleAction: ActionProps;
   /**
    * Rule layout component.
    *
    * @default Rule
    */
-  rule: Component<RuleProps>;
+  rule: RuleProps;
   /**
    * Rule group layout component.
    *
    * @default RuleGroup
    */
-  ruleGroup: Component<RuleGroupProps<F, O>>;
+  ruleGroup: RuleGroupProps<F, O>;
   /**
    * Shifts the current rule/group up or down in the query hierarchy.
    *
    * @default ShiftActions
    */
-  shiftActions: Component<ShiftActionsProps> | null;
+  shiftActions: ShiftActionsProps;
   /**
    * Undo/redo buttons for the outermost group, rendered when the `showUndoRedo` prop is `true`.
    *
    * @default UndoRedoActions
    */
-  undoRedoActions: Component<UndoRedoActionsProps> | null;
+  undoRedoActions: UndoRedoActionsProps;
   /**
    * Updates the `value` property for the current rule.
    *
    * @default ValueEditor
    */
-  valueEditor: Component<ValueEditorProps<F, O>> | null;
+  valueEditor: ValueEditorProps<F, O>;
   /**
    * Default component for all value selector controls.
    *
    * @default ValueSelector
    */
-  valueSelector: Component<ValueSelectorProps>;
+  valueSelector: ValueSelectorProps;
   /**
    * Selects the `valueSource` property for the current rule.
    *
    * @default ValueSelector
    */
-  valueSourceSelector: Component<ValueSourceSelectorProps> | null;
+  valueSourceSelector: ValueSourceSelectorProps;
+};
+
+/**
+ * The keys of {@link ControlPropsMap} that cannot be set to `null`.
+ *
+ * `rule`, `ruleGroup`, and the two defaults-for-a-family entries always have to render something.
+ *
+ * @group Props
+ */
+export type NonNullableControlKey = 'actionElement' | 'rule' | 'ruleGroup' | 'valueSelector';
+
+/**
+ * The type of a replacement subcomponent.
+ *
+ * Deliberately unparameterized. The rendering parent always passes the full prop bag, so a
+ * replacement is free to declare only the props it uses — or none at all, reaching `schema`,
+ * `actions`, and the current node through `useSchema`, `useQueryBuilderActions`,
+ * `useCurrentRule`, `useCurrentRuleGroup`, and `useCurrentPath` instead.
+ *
+ * A `Component<P>` cannot express that, and does not enforce what it appears to. Vue passes that
+ * type argument through as the *instance* type of the constructor member, so a component
+ * declaring nothing in common with `P` trips TypeScript's weak-type detection and is rejected —
+ * while a component declaring a prop of the **wrong** type still slips through the
+ * options-object member of the union. The check rejects the useful case and misses the broken
+ * one, so it is not worth having.
+ *
+ * {@link ControlPropsMap} is the contract instead. It is enforced where enforcement works: on
+ * the slot arguments in {@link ControlSlots}, and on the props each default control declares.
+ *
+ * @group Props
+ */
+export type ControlComponent = Component;
+
+/**
+ * Subcomponents.
+ *
+ * Derived from {@link ControlPropsMap}. Every entry accepts `null` — rendering nothing in that
+ * position — except {@link NonNullableControlKey}.
+ *
+ * @group Props
+ */
+export type ControlElementsProp<F extends FullField, O extends string> = Partial<{
+  [K in keyof ControlPropsMap<F, O>]:
+    | ControlComponent
+    | (K extends NonNullableControlKey ? never : null);
 }>;
 
 /**
@@ -185,18 +234,8 @@ export type ControlElementsProp<F extends FullField, O extends string> = Partial
  * @group Props
  */
 export type Controls<F extends FullField, O extends string> = {
-  [K in keyof Required<ControlElementsProp<F, O>>]-?: NonNullable<
-    Required<ControlElementsProp<F, O>>[K]
-  >;
+  [K in keyof ControlPropsMap<F, O>]-?: ControlComponent;
 };
-
-/**
- * The props a {@link Controls} entry accepts.
- *
- * Vue does not export a `ComponentProps` helper as of 3.5, so this recovers the type argument
- * from the `Component<P>` the entry is declared as.
- */
-export type ControlProps<C> = C extends Component<infer P> ? P : never;
 
 /**
  * Slot-based alternatives to {@link ControlElementsProp}.
@@ -209,11 +248,12 @@ export type ControlProps<C> = C extends Component<infer P> ? P : never;
  * There is no `null` form: omit the slot to fall through to the next source, or pass
  * `controlElements: { x: null }` to render nothing.
  *
- * A mapped type over {@link Controls}, so the slot list and the slot argument types cannot
- * drift from the components they replace.
+ * Unlike a {@link ControlComponent} entry, a slot's arguments are exactly typed: the slot list
+ * and its argument types are both derived from {@link ControlPropsMap}, so neither can drift from
+ * the components the slots replace.
  *
  * @group Props
  */
 export type ControlSlots<F extends FullField, O extends string> = Partial<{
-  [K in keyof Controls<F, O>]: Slot<ControlProps<Controls<F, O>[K]>>;
+  [K in keyof ControlPropsMap<F, O>]: Slot<ControlPropsMap<F, O>[K]>;
 }>;

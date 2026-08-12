@@ -17,6 +17,7 @@ import type {
 } from '@react-querybuilder/core';
 import { rootPath } from '@react-querybuilder/core';
 import { computed, useSlots } from 'vue';
+import { provideQueryBuilderNode } from '../composables/accessors.js';
 import { provideQueryBuilderContext } from '../composables/context.js';
 import { useQueryBuilder } from '../composables/useQueryBuilder.js';
 import type { ControlSlots } from '../types/controls.js';
@@ -69,6 +70,10 @@ const props = withDefaults(defineProps<QueryBuilderPropsBase<RG, RuleTypeOf<RG>,
   suppressStandardClassnames: undefined,
 });
 
+// Deliberately a manual prop + emit pair rather than `defineModel('query')`. `defineModel` keeps
+// a local shadow value whenever the parent does not bind, and that shadow is a second source of
+// truth — which conflicts with `defaultQuery` (uncontrolled) and, more fundamentally, with the
+// `QueryManager` that owns the query in every mode. Do not "modernize" this.
 const emit = defineEmits<{
   /** Emitted with each committed query, after `onQueryChange`. Enables `v-model:query`. */
   'update:query': [query: RG];
@@ -99,6 +104,10 @@ const state = useQueryBuilder<F, O>(getProps, {
 });
 
 provideQueryBuilderContext(state.context);
+
+// The `useSchema`/`useQueryBuilderActions` accessors. `Rule`/`RuleGroup` re-provide these at
+// every level; this call covers a slot rendered above any rule, and the root group itself.
+provideQueryBuilderNode(state.schema, state.actions);
 
 const schema = computed(() => state.schema.value);
 const rootGroup = computed(() => state.rootGroup.value as RuleGroupTypeAny);

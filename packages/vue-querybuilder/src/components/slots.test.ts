@@ -27,6 +27,7 @@ const renderWithSlots = (slotTemplate: string, qbAttrs = '') =>
 
 describe('slotToComponent', () => {
   it('returns the same component for the same slot', () => {
+    // oxlint-disable-next-line unicorn/consistent-function-scoping
     const slot = () => [h('span')];
     expect(slotToComponent(slot)).toBe(slotToComponent(slot));
   });
@@ -135,10 +136,7 @@ describe('control slots', () => {
     const Provider = defineComponent({
       components: { QueryBuilder },
       setup(_, { slots }) {
-        provideQueryBuilderContext(() => ({
-          // The stand-in declares no props, so it is not a structural `Component<ValueEditorProps>`.
-          controlElements: { valueEditor: ContextComponent as never },
-        }));
+        provideQueryBuilderContext(() => ({ controlElements: { valueEditor: ContextComponent } }));
         return () => slots.default?.();
       },
     });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Label } from '../internal/Label.js';
+import { QueryBuilderLabel } from '../internal/QueryBuilderLabel.js';
 import type { ShiftActionsProps } from '../types/props.js';
 
 /**
@@ -23,14 +23,14 @@ const props = defineProps<ShiftActionsProps>();
       :disabled="props.disabled || props.shiftUpDisabled"
       :title="props.titles?.shiftUp"
       @click="e => props.shiftUp?.(e)">
-      <Label :label="props.labels?.shiftUp" />
+      <QueryBuilderLabel :label="props.labels?.shiftUp" />
     </button>
     <button
       type="button"
       :disabled="props.disabled || props.shiftDownDisabled"
       :title="props.titles?.shiftDown"
       @click="e => props.shiftDown?.(e)">
-      <Label :label="props.labels?.shiftDown" />
+      <QueryBuilderLabel :label="props.labels?.shiftDown" />
     </button>
   </div>
 </template>

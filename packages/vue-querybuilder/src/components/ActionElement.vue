@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Label } from '../internal/Label.js';
+import { QueryBuilderLabel } from '../internal/QueryBuilderLabel.js';
 import type { ActionProps } from '../types/props.js';
 
 /**
@@ -38,6 +38,6 @@ const titleToRender = computed(() =>
     :class="props.className"
     :title="titleToRender"
     @click="e => props.handleOnClick(e)">
-    <Label :label="labelToRender" />
+    <QueryBuilderLabel :label="labelToRender" />
   </button>
 </template>

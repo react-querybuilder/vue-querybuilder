@@ -1,9 +1,11 @@
 <script setup lang="ts" generic="F extends string = string, O extends string = string">
 import { TestID } from '@react-querybuilder/core';
+import { provideCurrentRule, provideQueryBuilderNode } from '../composables/accessors.js';
 import { useRule } from '../composables/useRule.js';
+import { provideRuleInternals } from '../internal/parts.js';
+import RuleComponents from '../internal/RuleComponents.vue';
+import RuleSubQuery from '../internal/RuleSubQuery.vue';
 import type { RuleProps } from '../types/props.js';
-import RuleComponents from './RuleComponents.vue';
-import RuleSubQuery from './RuleSubQuery.vue';
 
 /**
  * Default component for `RuleType` objects.
@@ -26,6 +28,20 @@ const widenedProps = props as unknown as RuleProps;
 const parts = useRule(() => widenedProps);
 
 const { outerClassName, hasSubQuery } = parts;
+
+// Internal: how `RuleComponents`/`RuleSubQuery` reach everything they render from.
+provideRuleInternals(widenedProps, parts);
+
+// Public: the `useSchema`/`useCurrentRule`/... accessors, for replacement controls. Re-provided
+// at every level so that a subquery's descendants see the subquery's own schema and actions.
+provideQueryBuilderNode(
+  () => widenedProps.schema,
+  () => widenedProps.actions
+);
+provideCurrentRule(
+  () => widenedProps.rule,
+  () => widenedProps.path
+);
 </script>
 
 <template>
@@ -35,7 +51,7 @@ const { outerClassName, hasSubQuery } = parts;
     :data-rule-id="props.id"
     :data-level="props.path.length"
     :data-path="JSON.stringify(props.path)">
-    <RuleSubQuery v-if="hasSubQuery" :ruleProps="widenedProps" :parts="parts" />
-    <RuleComponents v-else :ruleProps="widenedProps" :parts="parts" />
+    <RuleSubQuery v-if="hasSubQuery" />
+    <RuleComponents v-else />
   </div>
 </template>

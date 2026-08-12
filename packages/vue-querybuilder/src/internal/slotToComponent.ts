@@ -16,7 +16,7 @@ const wrapperCache = new WeakMap<Slot<any>, Component<any>>();
  * forwards its props object straight through. The object itself is forwarded rather than a
  * spread copy, so nothing is lost on the way.
  *
- * Deliberately a functional component rather than an SFC, for the same reason as `Label`: an SFC
+ * Deliberately a functional component rather than an SFC, for the same reason as `QueryBuilderLabel`: an SFC
  * template emits whitespace text nodes, and the conformance suite asserts byte-level DOM parity.
  * A functional component renders exactly what the slot returns — no wrapper element, no
  * whitespace — and works identically in client and server modes.

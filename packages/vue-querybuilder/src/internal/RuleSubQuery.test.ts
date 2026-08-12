@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/vue';
 import { describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
-import QueryBuilder from './QueryBuilder.vue';
+import QueryBuilder from '../components/QueryBuilder.vue';
 
 /**
  * `RuleSubQuery` is only reachable through `Rule`, so it is exercised the way it is used: a

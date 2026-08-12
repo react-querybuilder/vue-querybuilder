@@ -7,6 +7,9 @@ reach:
 2. **Slots and `controlElements`** — replace an individual control.
 3. **Context** — apply either of the above to every query builder in a subtree.
 
+A replacement control reads what it needs either from its props or by injection; see
+[Props for parity, inject for ergonomics](#props-for-parity-inject-for-ergonomics).
+
 Before replacing a component, check whether [styling](./styling.md) gets you there.
 
 ## Translations
@@ -197,6 +200,48 @@ anything a replacement does not declare would otherwise land on the DOM as a str
 
 Keep `data-testid`, `class`, and `title` if you want the standard stylesheets — and any tests
 written against the standard DOM — to keep working.
+
+### Props for parity, inject for ergonomics
+
+The prop bag is the contract with React Query Builder, and it does not change: a component ported
+straight from React Query Builder keeps working. But reaching `schema`, `actions`, `path`, and
+the current node through props means declaring roughly ten props you may not otherwise want, so
+the same values are also available by injection:
+
+| Accessor                   | Equivalent prop                                  |
+| -------------------------- | ------------------------------------------------ |
+| `useSchema()`              | `schema`                                         |
+| `useQueryBuilderActions()` | `actions`                                        |
+| `useCurrentRule()`         | `rule` — the rule the control is rendered inside |
+| `useCurrentRuleGroup()`    | the group the control is rendered inside         |
+| `useCurrentPath()`         | `path`                                           |
+
+Each returns a `ComputedRef`, or `undefined` when there is no `QueryBuilder` above the call site.
+Each is also safe to call outside a component instance, where it likewise returns `undefined`.
+
+```vue
+<!-- A "clear this rule" button that declares no props at all. -->
+<script setup lang="ts">
+import { useCurrentPath, useQueryBuilderActions } from '@react-querybuilder/vue';
+
+const actions = useQueryBuilderActions();
+const path = useCurrentPath();
+</script>
+
+<template>
+  <button type="button" @click="actions?.value.onPropChange('value', '', path!.value)">
+    Clear
+  </button>
+</template>
+```
+
+`useCurrentRule` and `useCurrentRuleGroup` resolve the _nearest_ enclosing node, and only one of
+them is ever defined at a time. Inside a subquery, all five accessors resolve to the subquery's
+own state rather than the enclosing query builder's.
+
+This works for a `controlElements` entry as well as a slot: an entry is typed `ControlComponent`,
+which accepts any component regardless of the props it declares. The props each control receives
+are listed in `ControlPropsMap`.
 
 Replacing `rule` or `ruleGroup` wholesale is a larger job, because those components own the class
 names, the accessible description, and the child paths. Rather than recomputing any of that, use

@@ -2,9 +2,9 @@ import type { FunctionalComponent, VNodeChild } from 'vue';
 import type { LabelNode } from '../types/translations.js';
 
 /**
- * Props for {@link Label}.
+ * Props for {@link QueryBuilderLabel}.
  */
-export interface LabelProps {
+export interface QueryBuilderLabelProps {
   label?: LabelNode | null;
 }
 
@@ -21,8 +21,9 @@ export interface LabelProps {
  *
  * Renders nothing for `undefined`/`null`.
  */
-export const Label: FunctionalComponent<LabelProps> = props => (props.label ?? null) as VNodeChild;
+export const QueryBuilderLabel: FunctionalComponent<QueryBuilderLabelProps> = props =>
+  (props.label ?? null) as VNodeChild;
 
-Label.props = ['label'];
-Label.inheritAttrs = false;
-Label.displayName = 'Label';
+QueryBuilderLabel.props = ['label'];
+QueryBuilderLabel.inheritAttrs = false;
+QueryBuilderLabel.displayName = 'QueryBuilderLabel';
