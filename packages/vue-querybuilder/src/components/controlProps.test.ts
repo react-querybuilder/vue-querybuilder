@@ -1,5 +1,5 @@
 import type { Field, RuleGroupTypeAny, ValueSources } from '@react-querybuilder/core';
-import { controlKeys, controlPropKeys } from '@react-querybuilder/core';
+import { controlKeys, controlKind, controlPropKeys } from '@react-querybuilder/core';
 import { render } from '@testing-library/vue';
 import { describe, expect, it } from 'vitest';
 import type { ComponentOptions } from 'vue';
@@ -35,8 +35,25 @@ const gatedKeys = controlKeys.filter(
     ].includes(k)
 );
 
+/**
+ * `ValueSelector` is the default for all five selector keys, so the props it may legitimately
+ * receive are the union of their sets — `VersatileSelectorProps`, which is what it declares.
+ * `valueEditor` forwards `field`/`fieldData`/`rule` into its nested selector exactly as React's
+ * `propsForValueSelector` does, so the `valueSelector` slot is gated against that union rather
+ * than against its own key alone.
+ */
+const versatileSelectorKeys = [
+  ...new Set(
+    [...controlKeys.filter(k => controlKind[k] === 'selector'), 'valueSelector'].flatMap(
+      k => (controlPropKeys as Record<string, readonly string[]>)[k] ?? []
+    )
+  ),
+];
+
 const propKeysOf = (key: string): readonly string[] =>
-  (controlPropKeys as Record<string, readonly string[]>)[key];
+  key === 'valueSelector'
+    ? versatileSelectorKeys
+    : (controlPropKeys as Record<string, readonly string[]>)[key];
 
 describe('control props', () => {
   it.each(gatedKeys)('`%s`: the default control declares every prop it receives', key => {
@@ -65,10 +82,12 @@ describe('control props', () => {
       { name: 'f1', label: 'F1' },
       { name: 'f2', label: 'F2', valueSources: ['value', 'field'] as ValueSources },
       { name: 'sub', label: 'Sub', matchModes: true, subproperties: [{ name: 's1', label: 'S1' }] },
+      { name: 'sel', label: 'Sel', valueEditorType: 'select', values: [{ name: 'a', label: 'A' }] },
     ];
     const rules = [
       { field: 'f1', operator: '=', value: 'v' },
       { field: 'f2', operator: '=', value: 'v', valueSource: 'value' },
+      { field: 'sel', operator: '=', value: 'a' },
       { field: 'sub', operator: '=', value: { combinator: 'and', rules: [] } },
       { combinator: 'or', rules: [{ field: 'f1', operator: '=', value: 'x' }] },
     ];
@@ -87,10 +106,26 @@ describe('control props', () => {
       { combinator: 'and', rules } as RuleGroupTypeAny,
       { rules: [rules[0], 'or', rules[1]] } as unknown as RuleGroupTypeAny,
     ];
+    // `valueSelector` is only ever rendered *by* another control (`valueEditor`,
+    // `matchModeEditor`), so a probe in its slot never mounts while those are probes too. This
+    // pass restores the real ones so the `valueSelector` probe actually receives props.
+    const viaRealEditors = { ...controlElements };
+    delete viaRealEditors.valueEditor;
+    delete viaRealEditors.matchModeEditor;
+
     for (const defaultQuery of queries) {
       for (const showCombinatorsBetweenRules of [false, true]) {
         render(QueryBuilder, {
           props: { fields, defaultQuery, showCombinatorsBetweenRules, ...flags, controlElements },
+        });
+        render(QueryBuilder, {
+          props: {
+            fields,
+            defaultQuery,
+            showCombinatorsBetweenRules,
+            ...flags,
+            controlElements: viaRealEditors,
+          },
         });
       }
     }
@@ -101,7 +136,13 @@ describe('control props', () => {
         .filter(([, extra]) => (extra as string[]).length > 0)
     );
     expect(strays).toEqual({});
-    // Guard against the assertion above passing because nothing rendered.
-    expect(Object.values(received).filter(s => s.size > 0)).not.toHaveLength(0);
+    // Guard against the assertion above passing because nothing rendered. `actionElement` is the
+    // only key with no direct rendering path — it is a bulk override, always shadowed by a
+    // specific `*Action` key — so every other probe must have recorded at least one prop.
+    expect(
+      Object.entries(received)
+        .filter(([k, got]) => got.size === 0 && k !== 'actionElement')
+        .map(([k]) => k)
+    ).toEqual([]);
   });
 });
