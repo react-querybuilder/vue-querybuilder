@@ -10,8 +10,8 @@ import type { ShiftActionsProps } from '../types/props.js';
  * The click event is forwarded to `shiftUp`/`shiftDown` because `Rule`/`RuleGroup` read
  * `event.altKey` to decide whether to shift the rule/group into or out of the adjacent group.
  */
-// `inheritAttrs: false`: see `ActionElement.vue`.
-defineOptions({ name: 'ShiftActions', inheritAttrs: false });
+// Attribute fallthrough is on; see `ActionElement.vue`.
+defineOptions({ name: 'ShiftActions' });
 
 const props = defineProps<ShiftActionsProps>();
 </script>

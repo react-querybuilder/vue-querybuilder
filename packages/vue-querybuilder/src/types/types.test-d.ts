@@ -2,7 +2,9 @@
  * Type-level tests. Not executed by Vitest; compiled by `vue-tsc`, which is where the assertions
  * below are enforced. Any error here fails `bun run check`.
  */
+import type { controlPropKeys } from '@react-querybuilder/core';
 import type {
+  ControlKey,
   FullCombinator,
   FullField,
   FullOperator,
@@ -17,6 +19,7 @@ import type {
   ActionProps,
   ControlComponent,
   ControlElementsProp,
+  ControlPropsMap,
   ControlSlots,
   Controls,
   LabelNode,
@@ -200,4 +203,27 @@ assertType<ControlSlots<FullField, string> | undefined>(stdProps.slots);
 // #region Rule type derivation
 assertType<RuleType>(null as unknown as RuleTypeOf<RuleGroupType>);
 assertType<RuleType>(null as unknown as RuleTypeOf<RuleGroupTypeIC>);
+// #endregion
+
+// #region Control prop keys
+// The compile-time half of the fallthrough gate (see `components/controlProps.test.ts` for the
+// runtime half): every prop core says a control receives must exist on the port's props type for
+// that control. Drift shows up here as an error rather than as a stray DOM attribute.
+//
+// `rule`, `ruleGroup`, `dragHandle`, and the header/body element keys are excluded — see the
+// comment in `controlProps.test.ts`.
+type GatedControlKey = Exclude<
+  ControlKey,
+  'dragHandle' | 'rule' | 'ruleGroup' | 'ruleGroupBodyElements' | 'ruleGroupHeaderElements'
+>;
+
+type UndeclaredPropKeys<K extends GatedControlKey> = Exclude<
+  (typeof controlPropKeys)[K][number],
+  keyof ControlPropsMap<FullField, string>[K]
+>;
+
+type AssertNever<T extends never> = T;
+type _NoUndeclaredControlProps = AssertNever<
+  { [K in GatedControlKey]: UndeclaredPropKeys<K> }[GatedControlKey]
+>;
 // #endregion

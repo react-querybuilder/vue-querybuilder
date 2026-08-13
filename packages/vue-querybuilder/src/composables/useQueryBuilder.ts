@@ -290,13 +290,11 @@ export const useQueryBuilder = <
     };
   };
 
+  // No `toRaw` on the manager: as of `@react-querybuilder/core` 8.23.0 its state lives in a
+  // non-enumerable symbol-keyed own property, which reads correctly through a reactive `Proxy`,
+  // and that property is flagged `__v_skip` so `reactive()` will not deep-proxy it either.
   const manager =
-    (toRaw(initialProps.manager) as QueryManager<
-      RuleGroupTypeAny,
-      F,
-      FullOperator,
-      FullCombinator
-    >) ??
+    (initialProps.manager as QueryManager<RuleGroupTypeAny, F, FullOperator, FullCombinator>) ??
     new QueryManager<RuleGroupTypeAny, F, O, FullCombinator>(undefined, buildManagerOptions());
 
   if (!initialProps.manager) {
@@ -486,7 +484,7 @@ export const useQueryBuilder = <
       next => {
         if (valuesEqual(next, appliedSignature)) return;
         appliedSignature = next;
-        toRaw(manager).reconfigure(buildManagerOptions());
+        manager.reconfigure(buildManagerOptions());
       },
       { flush: 'post' }
     );

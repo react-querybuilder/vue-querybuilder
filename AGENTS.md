@@ -97,9 +97,19 @@ There is no Vapor CI gate until Vue 3.6 is stable; the constraint is upheld by r
   **not** safe next to a `{{ }}` interpolation, which condenses to a single space instead. Render
   every label through `QueryBuilderLabel` (a component, so it counts as an element) rather than
   interpolating.
-- Every default control sets `inheritAttrs: false`. `Rule`/`RuleGroup` hand each subcomponent a
-  common prop bag (`rule`, `rules`, `ruleOrGroup`, `fieldData`, ...) that most of them do not
-  declare; without this those land on the DOM as stray attributes React never emits.
+- No default control sets `inheritAttrs: false`; attribute fallthrough is on, as Vue developers
+  expect. Two invariants keep stray attributes off the DOM, and both are gated against core's
+  `controlPropKeys` — at runtime by `src/components/controlProps.test.ts`, at compile time by
+  `src/types/types.test-d.ts`:
+  1. every default control **declares** every prop its control keys receive (`ValueSelector`
+     therefore declares `VersatileSelectorProps`, the union across the five selector keys it is
+     the default for), and
+  2. `Rule`/`RuleGroup`/`RuleComponents`/`RuleGroupHeader`/`RuleGroupBody` **pass** nothing
+     beyond those keys — which is why `rule` is bound per-control rather than folded into the
+     `common` bag.
+     A new control prop must be added to both sides.
+- Bulk-override membership (`actionElement`, `valueSelector`) comes from core's `controlKind`,
+  never from sniffing the key name. `shiftActions`/`undoRedoActions` are not bulk targets.
 
 ### Slots
 
@@ -126,7 +136,7 @@ loader and guards it; it runs as part of `check:exports`.
 
 - The query is a `shallowRef`. A deep proxy defeats reference comparisons and is rejected by the manager's Immer deep-freeze.
 - Always `toRaw()` a query before handing it to the manager.
-- Likewise `toRaw()` the **manager itself** before calling it. `QueryManager` keeps its history in private class fields, which a reactive `Proxy` cannot read through (`Cannot read private member #past`). `schema` is an ordinary computed value in normal use, but Vue Test Utils wraps mount props in `reactive`, and nothing stops a consumer from doing the same.
+- Do **not** `toRaw()` the manager. As of `@react-querybuilder/core` 8.23.0 `QueryManager` keeps its state in a single non-enumerable, symbol-keyed own property that forwards through a `Proxy`'s `get` trap, and that property carries `__v_skip`, so `reactive()` neither breaks it nor deep-proxies its internals. This matters because Vue Test Utils wraps mount props in `reactive`, so a proxied `schema.manager` arrives by accident. Before 8.23.0 the state was in `#private` fields and every call threw `Cannot read private member #past`; `useQueryBuilder.test.ts` covers the proxy cycle.
 - A `useRule`/`useRuleGroup` return object reaches the internal components through **provide/inject**, not as a prop — see `src/internal/parts.ts`. It is unwrapped with `reactive()` exactly once, at the provider: Vue auto-unwraps refs only for top-level `setup` bindings, and `reactive()` on a container of refs yields each `.value` directly while leaving plain handler functions alone. Consumers inject and destructure; none of them calls `reactive()` itself.
 - `RuleSubQuery` provides the subquery's group under **both** the subquery key and the group key, so the `RuleGroupHeader`/`RuleGroupBody` that `RuleComponents` renders resolve the subquery's group rather than the enclosing one. `Rule` correspondingly shadows the subquery key with `undefined`, so a rule nested inside a subquery is not mistaken for one.
 - The **public** injection accessors (`useSchema`, `useQueryBuilderActions`, `useCurrentRule`, `useCurrentRuleGroup`, `useCurrentPath`) use their own keys in `src/composables/accessors.ts`. Keep them separate from the internal keys: the internal shape is not public API. `Rule`/`RuleGroup` re-provide schema and actions at every level so a subquery's descendants see the subquery's own.
@@ -185,6 +195,15 @@ specifiers, `exports`-map targets and condition order, built-artifact module-cyc
 `lint`,
 `test:coverage` (three thresholds), `conformance` (DOM parity, 232 tests), `test:ssr`, and the
 a11y suite (`src/components/a11y.test.ts`, part of the default run).
+
+The fallthrough gate (`src/components/controlProps.test.ts`) is proven red two ways: fold `rule`
+back into `RuleComponents`' `common` bag (the "passes nothing extra" half), or narrow
+`ValueSelector` back to `ValueSelectorProps` (the "declares everything" half). Its compile-time
+twin in `src/types/types.test-d.ts` is proven red by deleting any prop from a control's props
+interface.
+
+The proxy-safe-manager gate (`useQueryBuilder.test.ts`, "drives a manager wrapped in
+`reactive()`") is proven red by pinning `@react-querybuilder/core` below 8.23.0.
 
 The a11y gate is proven red by removing the `title` binding from `ValueSelector.vue`, which turns
 all eight axe cases red.

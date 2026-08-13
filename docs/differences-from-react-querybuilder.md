@@ -76,8 +76,12 @@ const log = () => console.log(formatQuery(manager.getQuery(), 'sql'));
 </template>
 ```
 
-`QueryManager` keeps its history in private class fields, which a reactive `Proxy` cannot read
-through. Do not wrap a manager in `reactive()`; if you must, `toRaw()` it before calling it.
+A manager may be wrapped in `reactive()` — Vue Test Utils does exactly that to mount props, so
+it happens by accident more often than by choice. As of `@react-querybuilder/core` 8.23.0 the
+manager's state lives in a non-enumerable, symbol-keyed own property, which reads correctly
+through a `Proxy`, and that property is flagged so `reactive()` will not deep-proxy the internals
+either. No `toRaw()` is required. (Before 8.23.0 the state was in `#private` fields and every
+call through a proxy threw `Cannot read private member #past`.)
 
 ## 4. Query binding
 
@@ -156,8 +160,10 @@ Consequences worth spelling out:
   directly to `QueryBuilder` beats an inherited slot, because levels are tried before sources.
 - `controlElements: { x: null }` short-circuits at its own level, so it renders nothing even when
   an outer provider supplies an `#x` slot.
-- Bulk sources are `actionElement` (keys ending `Action`/`Actions`) and `valueSelector` (keys
-  ending `Selector`). They never apply to `valueEditor`, `rule`, `ruleGroup`, `inlineCombinator`,
+- Bulk sources are `actionElement` and `valueSelector`. Membership comes from core's
+  `controlKind`, not from sniffing the key name: `shiftActions` and `undoRedoActions` (plural)
+  are **not** targets of the `actionElement` bulk override, matching React. Their buttons still
+  render through the `actionElement` control, so an override reaches them that way. They never apply to `valueEditor`, `rule`, `ruleGroup`, `inlineCombinator`,
   `notToggle`, or `matchModeEditor`.
 
 Because slots must be inheritable, they also have a prop form: `QueryBuilderContextProps.slots`,
@@ -271,10 +277,13 @@ Notes:
   rebuilt on every render does not retrigger it.
 - **`ValueSelector` drives a multi-select through each `<option>`'s `selected` attribute**, not a
   `value` binding, which Vue would stringify into a cleared selection. Rendered DOM is unchanged.
-- **Every default control sets `inheritAttrs: false`.** `Rule` and `RuleGroup` hand each
-  subcomponent a common prop bag (`rule`, `rules`, `ruleOrGroup`, `fieldData`, …) that most
-  controls do not declare; without this, Vue would land them on the DOM as stray attributes React
-  never emits. A custom control should do the same.
+- **Attribute fallthrough is on for every default control**, so a consumer-supplied `class`,
+  `id`, or listener behaves the way a Vue developer expects. Nothing strays onto the DOM on its
+  own: each control declares every prop core's `controlPropKeys` says it receives, and the call
+  sites pass nothing beyond that. Both halves are gated — at runtime by
+  `components/controlProps.test.ts` and at compile time by `types/types.test-d.ts` — so drift
+  from React surfaces as a failing check rather than as a stray attribute. A replacement control
+  that does not declare the full prop set should set `inheritAttrs: false`.
 - **Every boolean prop is declared with an explicit `undefined` default.** Vue casts an omitted
   `Boolean` prop to `false`, which is not the same as "not configured" — `autoSelectField`,
   `enableMountQueryChange`, and the `resetOn*` flags all default to `true`, and a stray `false`

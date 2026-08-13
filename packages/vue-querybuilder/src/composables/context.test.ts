@@ -1,9 +1,12 @@
-import { defaultTranslations } from '@react-querybuilder/core';
+import {
+  controlKeys as coreControlKeys,
+  controlKind,
+  defaultTranslations,
+} from '@react-querybuilder/core';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import {
-  controlKeys,
   emptyValidationMap,
   mergeControlElements,
   mergeQueryBuilderConfig,
@@ -12,6 +15,15 @@ import {
   provideQueryBuilderContext,
   useQueryBuilderContext,
 } from './context.js';
+
+/**
+ * The control keys this port has. Core's list, minus the three controls the port does not
+ * implement — the same derivation `context.ts` makes, restated here rather than imported so the
+ * test does not simply agree with the implementation by construction.
+ */
+const controlKeys = coreControlKeys.filter(
+  k => k !== 'dragHandle' && k !== 'ruleGroupBodyElements' && k !== 'ruleGroupHeaderElements'
+);
 
 // oxlint-disable-next-line typescript/no-explicit-any
 const Stub = (name: string): any => defineComponent({ name, render: () => h('span', name) });
@@ -139,22 +151,24 @@ describe('mergeControlElements', () => {
     expect(merged.addRuleAction).toBe(nullComponent);
   });
 
-  it('applies actionElement in bulk to every *Action/*Actions key', () => {
+  // Bulk-override membership comes from core's `controlKind`, not from sniffing the key name.
+  // The two disagree about `shiftActions`/`undoRedoActions` (plural): neither takes the
+  // `actionElement` bulk override, matching React. Their buttons still render through the
+  // `actionElement` control, so an override reaches them that way.
+  it('applies actionElement in bulk to every action key', () => {
     const bulk = Stub('bulk');
     const merged = mergeControlElements({ actionElement: bulk }, {}, {} as never);
-    const actionKeys = controlKeys.filter(
-      k => (k.endsWith('Action') || k.endsWith('Actions')) && k !== 'actionElement'
-    );
+    const actionKeys = controlKeys.filter(k => controlKind[k] === 'action');
     expect(actionKeys.length).toBeGreaterThan(0);
     for (const key of actionKeys) {
       expect(merged[key]).toBe(bulk);
     }
   });
 
-  it('applies valueSelector in bulk to every *Selector key', () => {
+  it('applies valueSelector in bulk to every selector key', () => {
     const bulk = Stub('bulk');
     const merged = mergeControlElements({ valueSelector: bulk }, {}, {} as never);
-    const selectorKeys = controlKeys.filter(k => k.endsWith('Selector') && k !== 'valueSelector');
+    const selectorKeys = controlKeys.filter(k => controlKind[k] === 'selector');
     expect(selectorKeys.length).toBeGreaterThan(0);
     for (const key of selectorKeys) {
       expect(merged[key]).toBe(bulk);
@@ -176,6 +190,9 @@ describe('mergeControlElements', () => {
       'inlineCombinator',
       'notToggle',
       'matchModeEditor',
+      // Plural, and not bulk-override targets: `controlKind` says so, and React agrees.
+      'shiftActions',
+      'undoRedoActions',
     ] as const) {
       expect(merged[key]).not.toBe(bulk);
       expect(merged[key]).toBe(defaults[key]);

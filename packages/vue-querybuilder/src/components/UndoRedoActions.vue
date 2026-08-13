@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TestID } from '@react-querybuilder/core';
-import { computed, toRaw } from 'vue';
+import { computed } from 'vue';
 import type { UndoRedoActionsProps } from '../types/props.js';
 
 /**
@@ -14,16 +14,15 @@ import type { UndoRedoActionsProps } from '../types/props.js';
  * The buttons themselves render through the `actionElement` control, so a replacement applies
  * here too.
  */
-// `inheritAttrs: false`: see `ActionElement.vue`.
-defineOptions({ name: 'UndoRedoActions', inheritAttrs: false });
+// Attribute fallthrough is on; see `ActionElement.vue`.
+defineOptions({ name: 'UndoRedoActions' });
 
 const props = defineProps<UndoRedoActionsProps>();
 
-// `toRaw`: `QueryManager` keeps its history in private class fields, which a reactive Proxy
-// cannot read through (`Cannot read private member #past`). `schema` is a plain computed value
-// in normal use, but nothing stops a caller — or a test harness such as Vue Test Utils, which
-// wraps mount props in `reactive` — from handing over a proxied one.
-const manager = computed(() => toRaw(props.schema.manager));
+// No `toRaw`: `QueryManager` is proxy-safe as of `@react-querybuilder/core` 8.23.0, so a
+// `schema` that arrived through `reactive()` (Vue Test Utils wraps mount props that way) reads
+// its history correctly.
+const manager = computed(() => props.schema.manager);
 const actionElement = computed(() => props.schema.controls.actionElement);
 
 // `canUndo`/`canRedo` are plain method calls on a stable object, so they carry no reactivity of

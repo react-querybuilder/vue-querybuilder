@@ -5,6 +5,8 @@ import type {
   ValidationMap,
 } from '@react-querybuilder/core';
 import {
+  controlKeys as coreControlKeys,
+  controlKind,
   defaultTranslations,
   mergeAnyTranslations,
   mergeClassnames,
@@ -82,44 +84,18 @@ export const useQueryBuilderContext = <
     : undefined;
 
 /**
- * A control element key that is overridden in bulk by `actionElement`.
- */
-const isActionKey = (key: string): boolean => key.endsWith('Action') || key.endsWith('Actions');
-
-/**
- * A control element key that is overridden in bulk by `valueSelector`.
- */
-const isSelectorKey = (key: string): boolean => key.endsWith('Selector');
-
-/**
  * Every key of {@link Controls}, in a stable order.
+ *
+ * Derived from core's `controlKeys` rather than restated, so a control added upstream cannot be
+ * missed here. The three exclusions are the controls this port does not have: `dragHandle`
+ * (drag-and-drop is a documented non-goal) and the header/body element lists (internal
+ * components here, not control elements).
+ *
+ * Module-private. Consumers who need the list get core's, which the package re-exports.
  */
-export const controlKeys = [
-  'actionElement',
-  'addGroupAction',
-  'addRuleAction',
-  'cloneGroupAction',
-  'cloneRuleAction',
-  'combinatorSelector',
-  'fieldSelector',
-  'inlineCombinator',
-  'lockGroupAction',
-  'lockRuleAction',
-  'matchModeEditor',
-  'muteGroupAction',
-  'muteRuleAction',
-  'notToggle',
-  'operatorSelector',
-  'removeGroupAction',
-  'removeRuleAction',
-  'rule',
-  'ruleGroup',
-  'shiftActions',
-  'undoRedoActions',
-  'valueEditor',
-  'valueSelector',
-  'valueSourceSelector',
-] as const satisfies readonly (keyof Controls<FullField, string>)[];
+const controlKeys = coreControlKeys.filter(
+  k => k !== 'dragHandle' && k !== 'ruleGroupBodyElements' && k !== 'ruleGroupHeaderElements'
+) as unknown as readonly (keyof Controls<FullField, string>)[];
 
 /**
  * The wrapped component for a named slot, or `undefined` if that slot is absent.
@@ -178,13 +154,13 @@ export const mergeControlElements = <F extends FullField, O extends string>(
       if (comp) return comp;
 
       const bulkSlot =
-        (isActionKey(key) ? slotFor(sl, 'actionElement') : undefined) ??
-        (isSelectorKey(key) ? slotFor(sl, 'valueSelector') : undefined);
+        (controlKind[key] === 'action' ? slotFor(sl, 'actionElement') : undefined) ??
+        (controlKind[key] === 'selector' ? slotFor(sl, 'valueSelector') : undefined);
       if (bulkSlot) return bulkSlot;
 
       return (
-        (isActionKey(key) ? ce.actionElement : undefined) ??
-        (isSelectorKey(key) ? ce.valueSelector : undefined)
+        (controlKind[key] === 'action' ? ce.actionElement : undefined) ??
+        (controlKind[key] === 'selector' ? ce.valueSelector : undefined)
       );
     };
 

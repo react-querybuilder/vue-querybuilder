@@ -27,6 +27,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`Label` is renamed to `QueryBuilderLabel`** (and `LabelProps` to `QueryBuilderLabelProps`).
   **Breaking, with no deprecated alias.** `Label` is far too generic for a top-level export and
   a likely collision in any globally registered setup.
+- **`controlKeys` is no longer exported from this package.** **Breaking in name only:** the
+  package re-exports `@react-querybuilder/core`, whose 8.23.0 `controlKeys` takes over the name.
+  Core's list is a superset — it includes the three controls this port does not implement
+  (`dragHandle`, `ruleGroupHeaderElements`, `ruleGroupBodyElements`).
 - **`RuleComponents`, `RuleGroupHeader`, `RuleGroupBody`, and `RuleSubQuery` are no longer
   exported**, and their prop types are gone with them. **Breaking.** The docs always described
   them as internal; they now read everything they render through injection and cannot be
@@ -35,6 +39,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Minimum `@react-querybuilder/core` is 8.23.0.** That release makes `QueryManager` readable
+  through a `Proxy` and adds the `controlKeys`/`controlPropKeys`/`controlKind` data this package
+  now builds on. (Until 8.23.0 ships, the dependency points at a pkg.pr.new pre-release build.)
+- **A `QueryManager` may be wrapped in `reactive()`.** The `toRaw(manager)` calls are gone from
+  `useQueryBuilder` and `UndoRedoActions`; the manager's state now reads correctly through a
+  proxy, and `reactive()` will not deep-proxy its internals. Vue Test Utils wraps mount props in
+  `reactive`, so this footgun was hit by accident rather than by choice. `toRaw()` on the
+  **query** is unchanged — Immer's deep-freeze is a separate concern.
+- **Attribute fallthrough is enabled on every default control.** `inheritAttrs: false` is gone
+  from all nine, so a consumer-supplied `class`, `id`, or listener lands on the rendered element
+  the way a Vue developer expects. Nothing strays there: `ValueSelector` now declares
+  `VersatileSelectorProps` (the union of the five selector control prop sets it is the default
+  for), and `Rule`/`RuleGroup` pass exactly the keys core's `controlPropKeys` lists — `rule` is
+  bound only on the controls that actually take it, rather than on every subcomponent. A runtime
+  test and a compile-time test gate both halves against core.
+- **`shiftActions` and `undoRedoActions` are no longer targets of the `actionElement` bulk
+  override.** **Breaking, if you relied on it.** Membership now comes from core's `controlKind`
+  instead of a `key.endsWith('Action'/'Actions')` test, which matches React. Both controls still
+  render their buttons through the `actionElement` control, so an override reaches them that way.
 - Structural manager options are now reactive. `fields`, `operators`, `combinators`,
   `baseField`/`baseOperator`/`baseCombinator`, `translations`, `maxLevels`, `disabled`, the
   `autoSelect*`/`resetOn*`/`listsAsArrays`/`addRuleToNewGroups` flags, `validator`, and

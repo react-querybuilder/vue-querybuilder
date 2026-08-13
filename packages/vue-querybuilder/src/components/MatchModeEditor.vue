@@ -13,9 +13,10 @@ import type { Schema } from '../types/schema.js';
  * Both controls carry the same `testID`, as upstream does, so tests reach the threshold editor
  * with `getAllByTestId(...)[1]`.
  */
-// `inheritAttrs: false`: see `ActionElement.vue`. This component renders two roots, so Vue would
-// not know where to put fallthrough attributes anyway.
-defineOptions({ name: 'MatchModeEditor', inheritAttrs: false });
+// Attribute fallthrough is on; see `ActionElement.vue`. This component renders two roots, so a
+// stray attribute would draw a Vue warning rather than land silently — which is the behavior a
+// Vue developer expects, and `controlProps.test.ts` proves none strays.
+defineOptions({ name: 'MatchModeEditor' });
 
 const dummyFieldData: FullField = { name: '', value: '', label: '' };
 const dummyPath: Path = [];

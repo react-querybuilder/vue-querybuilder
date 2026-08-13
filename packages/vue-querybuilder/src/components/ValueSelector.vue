@@ -6,7 +6,7 @@ import {
   normalizeValueSelectorValue,
 } from '@react-querybuilder/core';
 import { computed } from 'vue';
-import type { ValueSelectorProps } from '../types/props.js';
+import type { VersatileSelectorProps } from '../types/props.js';
 
 /**
  * Default `<select>` component for every selector control — combinator, field, operator, value
@@ -14,10 +14,15 @@ import type { ValueSelectorProps } from '../types/props.js';
  *
  * Port of React Query Builder's `ValueSelector` (`ValueSelector.tsx`).
  */
-// See `ActionElement.vue` for why attribute fallthrough is disabled.
-defineOptions({ name: 'ValueSelector', inheritAttrs: false });
+defineOptions({ name: 'ValueSelector' });
 
-const props = defineProps<ValueSelectorProps>();
+// `VersatileSelectorProps`, not `ValueSelectorProps`: this component is the default for the
+// `combinatorSelector`, `fieldSelector`, `operatorSelector`, `valueSourceSelector`, and
+// `valueSelector` controls, so it receives the union of their prop sets (core's
+// `controlPropKeys`). Declaring the union is what keeps `rule`, `field`, `fieldData`,
+// `operator`, `ruleGroup`, and `rules` off the rendered `<select>` now that attribute
+// fallthrough is enabled. `controlProps.test.ts` gates the declaration against core.
+const props = defineProps<VersatileSelectorProps>();
 
 const val = computed(() => normalizeValueSelectorValue(props.value, props.multiple));
 

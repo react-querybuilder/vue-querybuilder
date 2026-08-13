@@ -31,7 +31,11 @@ const rule = computed(() => ruleProps.value.rule);
 const translations = computed(() => ruleProps.value.translations);
 const controls = computed(() => schema.value.controls);
 
-/** The props every subcomponent of a rule receives. */
+/**
+ * The props every subcomponent of a rule receives. Deliberately the intersection of core's
+ * `controlPropKeys` entries: `rule` is bound only on the controls whose prop lists include it,
+ * so nothing falls through to the DOM now that the default controls inherit attributes.
+ */
 const common = computed(() => ({
   level: ruleProps.value.path.length,
   path: ruleProps.value.path,
@@ -39,7 +43,6 @@ const common = computed(() => ({
   context: ruleProps.value.context,
   validation: parts.ctx.validationResult,
   schema: schema.value,
-  rule: rule.value,
 }));
 
 const shiftTitles = computed(() =>
@@ -89,6 +92,7 @@ const fieldIsSelected = computed(
     v-if="parts.showFieldSelector"
     v-bind="common"
     :testID="TestID.fields"
+    :rule="rule"
     :options="schema.fields"
     :title="translations.fields?.title"
     :value="rule.field"
@@ -101,6 +105,7 @@ const fieldIsSelected = computed(
       v-if="subQueryParts"
       v-bind="common"
       :testID="TestID.matchModeEditor"
+      :rule="rule"
       :field="rule.field"
       :fieldData="parts.fieldData"
       :title="translations.matchMode?.title"
@@ -115,6 +120,7 @@ const fieldIsSelected = computed(
         :is="controls.operatorSelector"
         v-bind="common"
         :testID="TestID.operators"
+        :rule="rule"
         :field="rule.field"
         :fieldData="parts.fieldData"
         :title="translations.operators?.title"
@@ -128,6 +134,7 @@ const fieldIsSelected = computed(
           v-if="parts.showValueSourceSelector"
           v-bind="common"
           :testID="TestID.valueSourceSelector"
+          :rule="rule"
           :field="rule.field"
           :fieldData="parts.fieldData"
           :title="translations.valueSourceSelector?.title"
@@ -139,6 +146,7 @@ const fieldIsSelected = computed(
           :is="controls.valueEditor"
           v-bind="common"
           :testID="TestID.valueEditor"
+          :rule="rule"
           :field="rule.field"
           :fieldData="parts.fieldData"
           :title="translations.value?.title"
