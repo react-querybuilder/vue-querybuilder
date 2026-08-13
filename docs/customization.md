@@ -180,7 +180,6 @@ package barrel:
 <script setup lang="ts">
 import type { ValueEditorProps } from '@react-querybuilder/vue';
 
-defineOptions({ inheritAttrs: false });
 const props = defineProps<ValueEditorProps>();
 </script>
 
@@ -195,8 +194,11 @@ const props = defineProps<ValueEditorProps>();
 </template>
 ```
 
-Set `inheritAttrs: false`. `Rule` and `RuleGroup` hand every subcomponent a common prop bag, and
-anything a replacement does not declare would otherwise land on the DOM as a stray attribute.
+Declaring the full props type is enough: `Rule` and `RuleGroup` pass exactly the props each
+control's type lists, so nothing is left over to fall through, and normal Vue attribute
+fallthrough stays available for whatever a consumer of _your_ component passes. If you declare
+only a subset of the props, set `inheritAttrs: false` so the rest do not land on the DOM as
+stray attributes.
 
 Keep `data-testid`, `class`, and `title` if you want the standard stylesheets — and any tests
 written against the standard DOM — to keep working.

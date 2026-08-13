@@ -22,8 +22,8 @@ import type { ValueEditorProps, ValueSelectorProps } from '../types/props.js';
  * hazard — the effect that resets a value when it stops representing a list — lives in
  * `useValueEditorReset`; everything else is a plain derivation.
  */
-// See `ActionElement.vue` for why attribute fallthrough is disabled.
-defineOptions({ name: 'ValueEditor', inheritAttrs: false });
+// Attribute fallthrough is on; see `ActionElement.vue`.
+defineOptions({ name: 'ValueEditor' });
 
 const props = defineProps<ValueEditorProps>();
 

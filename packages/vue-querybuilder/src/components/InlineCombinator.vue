@@ -10,8 +10,8 @@ import type { CombinatorSelectorProps, InlineCombinatorProps } from '../types/pr
  *
  * Port of React Query Builder's `InlineCombinator` (`InlineCombinator.tsx`).
  */
-// `inheritAttrs: false`: see `ActionElement.vue`.
-defineOptions({ name: 'InlineCombinator', inheritAttrs: false });
+// Attribute fallthrough is on; see `ActionElement.vue`.
+defineOptions({ name: 'InlineCombinator' });
 
 const props = defineProps<InlineCombinatorProps>();
 

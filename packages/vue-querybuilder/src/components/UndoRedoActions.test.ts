@@ -3,7 +3,7 @@ import { QueryManager } from '@react-querybuilder/core';
 import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/vue';
 import { describe, expect, it } from 'vitest';
-import { defineComponent, h, nextTick } from 'vue';
+import { defineComponent, h, nextTick, reactive } from 'vue';
 import type { Schema } from '../types/schema.js';
 import { defaultControlElements } from './defaultControlElements.js';
 import UndoRedoActions from './UndoRedoActions.vue';
@@ -84,6 +84,21 @@ describe('UndoRedoActions', () => {
     const { getByTestId } = render(UndoRedoActions, { props: { ...props(), disabled: true } });
     expect(getByTestId('undo-action')).toBeDisabled();
     expect(getByTestId('redo-action')).toBeDisabled();
+  });
+
+  it('reads history off a manager that arrived through `reactive()`', async () => {
+    const { manager, props } = setup();
+    manager.update('value', 'changed', [0]);
+    const base = props();
+    // Vue Test Utils wraps mount props in `reactive`, so this is the accidental case, not an
+    // exotic one. `QueryManager` is proxy-safe as of core 8.23.0.
+    const { getByTestId } = render(UndoRedoActions, {
+      props: reactive({ ...base }) as typeof base,
+    });
+    await nextTick();
+    expect(getByTestId('undo-action')).toBeEnabled();
+    await userEvent.click(getByTestId('undo-action'));
+    expect(manager.getQuery().rules[0]).toMatchObject({ value: 'v1' });
   });
 
   it('renders through a replacement `actionElement`', () => {

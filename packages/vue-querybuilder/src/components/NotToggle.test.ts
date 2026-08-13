@@ -86,11 +86,16 @@ describe('NotToggle', () => {
     expect(nodes[1].textContent).toBe('Not');
   });
 
-  it('does not let undeclared props fall through as attributes', () => {
+  // Attribute fallthrough is enabled, so a consumer-supplied attribute reaches the DOM and a
+  // consumer-supplied `class` merges with the control's own. Nothing the port passes internally
+  // strays here; `controlProps.test.ts` is the gate for that.
+  it('passes consumer-supplied attributes through to the root element', () => {
     const { getByTestId } = render(NotToggle, {
-      props: { ...baseProps(), testID: 'x' },
-      attrs: { rules: [] },
+      props: { ...baseProps(), className: 'own-cn', testID: 'x' },
+      attrs: { id: 'consumer-id', class: 'consumer-cn' },
     });
-    expect(getByTestId('x')).not.toHaveAttribute('rules');
+    const el = getByTestId('x');
+    expect(el).toHaveAttribute('id', 'consumer-id');
+    expect(el).toHaveClass('own-cn', 'consumer-cn');
   });
 });

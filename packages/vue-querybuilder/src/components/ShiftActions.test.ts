@@ -72,11 +72,12 @@ describe('ShiftActions', () => {
     expect(getByTestId('x')).toBeInTheDocument();
   });
 
-  it('does not let undeclared props fall through as attributes', () => {
+  // See `NotToggle.test.ts`: fallthrough is the point of dropping `inheritAttrs: false`.
+  it('passes consumer-supplied attributes through to the root element', () => {
     const { getByTestId } = render(ShiftActions, {
       props: { ...baseProps(), testID: 'x' },
-      attrs: { rules: [] },
+      attrs: { id: 'consumer-id' },
     });
-    expect(getByTestId('x')).not.toHaveAttribute('rules');
+    expect(getByTestId('x')).toHaveAttribute('id', 'consumer-id');
   });
 });

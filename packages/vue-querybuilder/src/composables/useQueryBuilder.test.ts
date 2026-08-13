@@ -23,6 +23,27 @@ describe('useQueryBuilder', () => {
       expect(result.query.value).toBe(manager.getQuery());
     });
 
+    // Gate for the proxy-safe `QueryManager` (core 8.23.0). Vue Test Utils wraps mount props in
+    // `reactive`, so a consumer hits this by accident rather than by choice. Before the bump the
+    // port had to `toRaw` the manager; without that, every call threw
+    // `Cannot read private member #past`.
+    it('drives a manager wrapped in `reactive()`', () => {
+      const manager = reactive(
+        new QueryManager(flatQuery, { fields: testFields, history: true })
+      ) as unknown as QueryManager;
+      const { result } = runInScope(() =>
+        useQueryBuilder(baseProps({ manager: manager as never, defaultQuery: undefined }))
+      );
+      result.actions.onRuleRemove([0]);
+      expect(result.manager.getQuery().rules).toHaveLength(1);
+      expect(result.manager.canUndo()).toBe(true);
+      result.manager.undo();
+      expect(result.manager.getQuery().rules).toHaveLength(2);
+      // The state bag is a non-enumerable own property, so it stays out of `Object.keys`,
+      // spread, and `JSON.stringify`.
+      expect(Object.keys(manager)).toEqual(Object.keys(new QueryManager()));
+    });
+
     it('seeds from defaultQuery', () => {
       const { result } = runInScope(() => useQueryBuilder(baseProps({ defaultQuery: flatQuery })));
       expect(result.query.value.rules).toHaveLength(2);

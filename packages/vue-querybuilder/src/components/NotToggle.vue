@@ -8,10 +8,8 @@ import type { NotToggleProps } from '../types/props.js';
  *
  * Port of React Query Builder's `NotToggle` (`NotToggle.tsx`).
  */
-// `inheritAttrs: false`: `RuleGroup` passes every subcomponent a common set of props
-// (`ruleGroup`, `rules`, ...) that this component does not declare. Without this they would
-// fall through onto the `<label>` as stray attributes, which React never emits.
-defineOptions({ name: 'NotToggle', inheritAttrs: false });
+// Attribute fallthrough is on; see `ActionElement.vue`.
+defineOptions({ name: 'NotToggle' });
 
 const props = defineProps<NotToggleProps>();
 

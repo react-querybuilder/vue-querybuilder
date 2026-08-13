@@ -8,10 +8,11 @@ import type { ActionProps } from '../types/props.js';
  *
  * Port of React Query Builder's `ActionElement` (`ActionElement.tsx`).
  */
-// `inheritAttrs: false`: `Rule`/`RuleGroup` pass every subcomponent a common set of props
-// (`rule`, `rules`, `ruleOrGroup`, ...) that this component does not declare. Without this they
-// would fall through onto the `<button>` as stray attributes, which React never emits.
-defineOptions({ name: 'ActionElement', inheritAttrs: false });
+// Attribute fallthrough is on, as a Vue developer expects: a consumer-supplied `class`, `id`,
+// or listener lands on the `<button>`. Nothing strays there on its own — `ActionProps` declares
+// every prop core's `controlPropKeys` says an action control receives, and the call sites pass
+// nothing beyond that. `controlProps.test.ts` gates both halves.
+defineOptions({ name: 'ActionElement' });
 
 const props = defineProps<ActionProps>();
 
