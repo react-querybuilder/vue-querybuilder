@@ -7,11 +7,12 @@ Query Builder itself uses. This page lists everything that is not the same.
 ## 1. Rendered output is identical
 
 The port's defining constraint is **full DOM parity**: tag name, document order, `data-testid`,
-`data-path`, and byte-identical `class` attributes match React Query Builder's output.
+`data-path`, byte-identical `class` attributes, and each element's own direct text match React
+Query Builder's output.
 
 This is not aspirational. The repository downloads a conformance fixture asset published by the
-upstream project (pinned to `v8.22.2`) and asserts, for 49 scenario × query combinations, that the
-full ordered list of rendered elements matches byte for byte — plus 49 accessible-description
+upstream project (pinned to `v8.23.0`) and asserts, for 50 scenario × query combinations, that the
+full ordered list of rendered elements matches byte for byte — plus 50 accessible-description
 cases and 58 replayed action sequences. See `packages/vue-querybuilder/test/conformance/`.
 
 **Any undocumented difference in rendered output is a bug.** Please report it.

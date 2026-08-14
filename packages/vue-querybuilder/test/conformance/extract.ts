@@ -23,6 +23,12 @@ export interface ClassNameEntry {
   path?: string;
   /** The verbatim `class` attribute. Whitespace is preserved; this is a byte-level claim. */
   className: string;
+  /**
+   * The concatenation of the element's OWN direct text-node children, verbatim: no trimming, no
+   * whitespace collapsing, no descendant text. `''` when there are none. `textContent` is not
+   * equivalent — it includes descendants.
+   */
+  text: string;
 }
 
 /** The accessible description (`title`) of one rule group. */
@@ -37,6 +43,15 @@ export interface ExtractResult {
 }
 
 const RULE_GROUP_TESTID = 'rule-group';
+
+/** Concatenated direct text-node children. Character references are already decoded by the DOM. */
+const ownText = (element: Element): string => {
+  let text = '';
+  for (const node of element.childNodes) {
+    if (node.nodeType === 3 /* TEXT_NODE */) text += node.nodeValue ?? '';
+  }
+  return text;
+};
 
 /**
  * Extracts the class surface and the accessible descriptions from a rendered query builder.
@@ -65,6 +80,7 @@ export const extract = (container: Element): ExtractResult => {
         ...(testID === undefined ? {} : { testID }),
         ...(path === undefined ? {} : { path }),
         className,
+        text: ownText(element),
       });
     }
 

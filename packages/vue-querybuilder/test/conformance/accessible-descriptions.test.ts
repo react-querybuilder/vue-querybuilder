@@ -1,5 +1,5 @@
 /**
- * The `title` attribute of every rule group, for all 49 scenario × query pairs.
+ * The `title` attribute of every rule group, for all 50 scenario × query pairs.
  *
  * This is where `accessibleDescriptionGenerator` surfaces. The `customized` scenario supplies a
  * non-default generator, so these assertions cover more than the identity function.

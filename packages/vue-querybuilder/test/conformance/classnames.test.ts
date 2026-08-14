@@ -42,7 +42,7 @@ describe('conformance: classnames', () => {
     // Function-valued props serialize as `null`, so this compares the JSON projection of the
     // local scenarios against the recorded one. It catches a scenario renamed, reordered, or
     // given a different boolean prop upstream — the drift a bumped `CONFORMANCE_TAG` can hide
-    // behind 49 opaque diffs.
+    // behind 50 opaque diffs.
     const local = scenarios.map(({ name, description, props }) => ({
       name,
       description,

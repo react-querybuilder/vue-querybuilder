@@ -65,7 +65,7 @@
     "vue": "^3.5"
   },
   "dependencies": {
-    "@react-querybuilder/core": "https://pkg.pr.new/react-querybuilder/react-querybuilder/@react-querybuilder/core@a784003"
+    "@react-querybuilder/core": "^8.23.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

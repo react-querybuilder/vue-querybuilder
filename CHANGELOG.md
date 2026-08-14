@@ -41,7 +41,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Minimum `@react-querybuilder/core` is 8.23.0.** That release makes `QueryManager` readable
   through a `Proxy` and adds the `controlKeys`/`controlPropKeys`/`controlKind` data this package
-  now builds on. (Until 8.23.0 ships, the dependency points at a pkg.pr.new pre-release build.)
+  now builds on.
 - **A `QueryManager` may be wrapped in `reactive()`.** The `toRaw(manager)` calls are gone from
   `useQueryBuilder` and `UndoRedoActions`; the manager's state now reads correctly through a
   proxy, and `reactive()` will not deep-proxy its internals. Vue Test Utils wraps mount props in
@@ -66,6 +66,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   change for anyone who relied on the documented freeze; there is no opt-out.
 - An externally supplied `manager` prop is never reconfigured. That manager belongs to the
   consumer, so the pass-through path stays pure.
+- **Conformance fixtures are pinned to upstream `v8.23.0`** (fixture schema 3, up from 2). Schema
+  3 adds a per-element `text` field — the concatenation of an element's own direct text-node
+  children, verbatim — so the harness now asserts **rendered text parity** alongside class,
+  tag, order, `data-testid`, and `data-path`. `test/conformance/extract.ts` extracts it; the
+  gate is proven red by stubbing that extraction (204 of 237 cases fail).
 - Bumped `@react-querybuilder/core` to `^8.22.3` for `QueryManager#reconfigure`.
 
 ### Fixed
@@ -119,8 +124,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Coverage gate over `packages/*/src/**` (90% lines) in the root `vitest.config.ts`.
 - Conformance harness: `scripts/fetch-fixtures.ts` (pinned to the upstream `v8.22.2` release
   asset, checksum- and `schemaVersion`-verified) plus `test/conformance/`, run separately via
-  `bun run conformance`. Asserts full DOM parity — 49 classname cases (byte-identical `class`
-  attributes in document order), 49 accessible-description cases, 58 action sequences through a
+  `bun run conformance`. Asserts full DOM parity — 50 classname cases (byte-identical `class`
+  attributes in document order), 50 accessible-description cases, 58 action sequences through a
   bare `QueryManager` and the guard-sensitive subset through the manager `useQueryBuilder` builds
   from props, and a `formatQuery` → `parseSQL` → `formatQuery` round trip over all nine fixture
   queries.

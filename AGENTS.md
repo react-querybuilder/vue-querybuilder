@@ -7,8 +7,8 @@
 The package `@react-querybuilder/vue` (repo/folder name `vue-querybuilder`) is a Vue 3 port of
 [React Query Builder](https://react-querybuilder.js.org), built on the published
 `@react-querybuilder/core`. The port's defining constraint is **full DOM parity**: tag name,
-document order, `data-testid`, `data-path`, and byte-identical `class` attributes must match
-React Query Builder's output for all conformance cases.
+document order, `data-testid`, `data-path`, byte-identical `class` attributes, and each element's
+own direct text must match React Query Builder's output for all conformance cases.
 
 The scoped name is **temporary**: npm's automated check rejects `vue-querybuilder` as too close
 to the existing `vue-query-builder`. Publish as `vue-querybuilder` once that name frees up. Repo
@@ -193,7 +193,7 @@ it, record that it went red, then revert. A gate that cannot fail is worse than 
 Current gates: `fmt:check`, `build`, `check` (library + examples), `check:exports` (dist relative
 specifiers, `exports`-map targets and condition order, built-artifact module-cycle check, `attw`),
 `lint`,
-`test:coverage` (three thresholds), `conformance` (DOM parity, 232 tests), `test:ssr`, and the
+`test:coverage` (three thresholds), `conformance` (DOM parity, 237 tests), `test:ssr`, and the
 a11y suite (`src/components/a11y.test.ts`, part of the default run).
 
 The fallthrough gate (`src/components/controlProps.test.ts`) is proven red two ways: fold `rule`

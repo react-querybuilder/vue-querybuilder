@@ -54,7 +54,7 @@
       "name": "@react-querybuilder/vue",
       "version": "0.2.0",
       "dependencies": {
-        "@react-querybuilder/core": "https://pkg.pr.new/react-querybuilder/react-querybuilder/@react-querybuilder/core@a784003",
+        "@react-querybuilder/core": "^8.23.0",
       },
       "devDependencies": {
         "@arethetypeswrong/cli": "^0.18.5",
@@ -397,7 +397,7 @@
 
     "@poppinss/exception": ["@poppinss/exception@1.2.3", "", {}, "sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw=="],
 
-    "@react-querybuilder/core": ["@react-querybuilder/core@https://pkg.pr.new/react-querybuilder/react-querybuilder/@react-querybuilder/core@a784003", { "dependencies": { "@ts-jison/lexer": "0.4.1-alpha.1", "@ts-jison/parser": "0.4.1-alpha.1", "@types/json-logic-js": ">=2", "immer": "^11.1.16", "numeric-quantity": "^3.2.2" }, "peerDependencies": { "@tanstack/db": ">=0.6.9", "@traqula/parser-sparql-1-2": ">=0.1.0", "chevrotain": ">=11", "drizzle-orm": ">=0.38.0", "json-logic-js": ">=2", "jsonata": ">=2", "sequelize": ">=6", "spel2js": ">=0.2.0" }, "optionalPeers": ["@tanstack/db", "@traqula/parser-sparql-1-2", "chevrotain", "drizzle-orm", "json-logic-js", "jsonata", "sequelize", "spel2js"] }, "sha512-WHxhs4DFfM6xC9PrnDckgWOAT9NlRHHpinq5AZ9Z6gzmVa4pY1mlPLIo0I/oF+cmYDEcip1q6JUG7XL2dN/Fiw=="],
+    "@react-querybuilder/core": ["@react-querybuilder/core@8.23.0", "", { "dependencies": { "@ts-jison/lexer": "0.4.1-alpha.1", "@ts-jison/parser": "0.4.1-alpha.1", "@types/json-logic-js": ">=2", "immer": "^11.1.16", "numeric-quantity": "^3.2.2" }, "peerDependencies": { "@tanstack/db": ">=0.6.9", "@traqula/parser-sparql-1-2": ">=0.1.0", "chevrotain": ">=11", "drizzle-orm": ">=0.38.0", "json-logic-js": ">=2", "jsonata": ">=2", "sequelize": ">=6", "spel2js": ">=0.2.0" }, "optionalPeers": ["@tanstack/db", "@traqula/parser-sparql-1-2", "chevrotain", "drizzle-orm", "json-logic-js", "jsonata", "sequelize", "spel2js"] }, "sha512-5EHBNwC31K0E4LJE2vea7s7bHnlRnYShH3ceSF4ZMcW5pnfcByfJA6JHymT1bh67l+n7iYq5n2gXtJuCZMLDSw=="],
 
     "@react-querybuilder/vue": ["@react-querybuilder/vue@workspace:packages/vue-querybuilder"],
 
