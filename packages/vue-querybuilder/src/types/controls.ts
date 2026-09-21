@@ -159,6 +159,10 @@ export type ControlPropsMap<F extends FullField, O extends string> = {
    */
   undoRedoActions: UndoRedoActionsProps;
   /**
+   * Ungroup button for groups that are not the outermost group, rendered when the `showUngroupButtons` prop is `true`.
+   */
+  ungroupAction: ActionProps;
+  /**
    * Updates the `value` property for the current rule.
    *
    * @default ValueEditor

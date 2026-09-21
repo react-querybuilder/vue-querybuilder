@@ -238,6 +238,74 @@ describe('useQueryActions', () => {
     });
   });
 
+  describe('ungroupRuleGroup', () => {
+    it('replaces a group with its own rules', () => {
+      const { manager, actions } = setup({}, nested);
+      actions.ungroupRuleGroup([1]);
+      expect(manager.getQuery().rules.map(r => (r as RuleType).id)).toEqual(['r0', 'r1']);
+    });
+
+    it('is vetoed by onUngroup returning false', () => {
+      const { manager, actions } = setup({ onUngroup: () => false }, nested);
+      actions.ungroupRuleGroup([1]);
+      expect(manager.getQuery().rules.map(r => (r as RuleType).id)).toEqual(['r0', 'g1']);
+    });
+
+    it('uses the replacement query onUngroup returns', () => {
+      const { manager, actions } = setup(
+        { onUngroup: () => ({ id: 'x', combinator: 'or', rules: [] }) as never },
+        nested
+      );
+      actions.ungroupRuleGroup([1]);
+      expect(manager.getQuery()).toMatchObject({ combinator: 'or', rules: [] });
+    });
+
+    it('passes the group, path, current query, next query, and context', () => {
+      const onUngroup = vi.fn(() => true);
+      const { manager, actions } = setup({ onUngroup: onUngroup as never }, nested);
+      const target = manager.findPath([1]);
+      const original = manager.getQuery();
+      // The second argument is the context: core's signature has no `clone` flag here, so an
+      // extra parameter in the implementation would swallow it.
+      actions.ungroupRuleGroup([1], 'ctx');
+
+      const [group, path, query, nextQuery, context] = onUngroup.mock
+        .calls[0] as unknown as unknown[];
+      expect(group).toBe(target);
+      expect(path).toEqual([1]);
+      expect(query).toBe(original);
+      expect((nextQuery as RuleGroupType).rules.map(r => (r as RuleType).id)).toEqual(['r0', 'r1']);
+      expect(context).toBe('ctx');
+    });
+
+    it('does nothing for an unresolvable path', () => {
+      const onUngroup = vi.fn(() => true);
+      const { manager, actions } = setup({ onUngroup: onUngroup as never }, nested);
+      const before = manager.getQuery();
+      actions.ungroupRuleGroup([99]);
+      expect(onUngroup).not.toHaveBeenCalled();
+      expect(manager.getQuery()).toBe(before);
+    });
+
+    it('refuses the root path — there is no parent to absorb its rules', () => {
+      const onUngroup = vi.fn(() => true);
+      const { manager, actions } = setup({ onUngroup: onUngroup as never }, nested);
+      const before = manager.getQuery();
+      actions.ungroupRuleGroup([]);
+      expect(onUngroup).not.toHaveBeenCalled();
+      expect(manager.getQuery()).toBe(before);
+    });
+
+    it('refuses a rule — only a group can be replaced by its own rules', () => {
+      const onUngroup = vi.fn(() => true);
+      const { manager, actions } = setup({ onUngroup: onUngroup as never }, nested);
+      const before = manager.getQuery();
+      actions.ungroupRuleGroup([0]);
+      expect(onUngroup).not.toHaveBeenCalled();
+      expect(manager.getQuery()).toBe(before);
+    });
+  });
+
   describe('history', () => {
     it('produces exactly one undo entry per action', () => {
       const { manager, actions } = setup();

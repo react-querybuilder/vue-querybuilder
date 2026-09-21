@@ -48,6 +48,7 @@ export interface UseRuleGroupReturn {
   readonly addRule: ActionHandler;
   readonly addGroup: ActionHandler;
   readonly cloneGroup: ActionHandler;
+  readonly ungroup: ActionHandler;
   readonly toggleLockGroup: ActionHandler;
   readonly toggleMuteGroup: ActionHandler;
   readonly removeGroup: ActionHandler;
@@ -172,6 +173,10 @@ export const useRuleGroup = (props: MaybeRefOrGetter<RuleGroupProps>): UseRuleGr
     if (!disabled.value) p.value.actions.onGroupRemove(path.value);
   });
 
+  const ungroup = stopPropagation(() => {
+    if (!disabled.value) p.value.actions.ungroupRuleGroup(path.value);
+  });
+
   const shiftGroupUp = stopPropagation(event => {
     if (!disabled.value && !p.value.shiftUpDisabled) {
       p.value.actions.moveRule(path.value, 'up', event?.altKey);
@@ -200,6 +205,7 @@ export const useRuleGroup = (props: MaybeRefOrGetter<RuleGroupProps>): UseRuleGr
     addRule,
     addGroup,
     cloneGroup,
+    ungroup,
     toggleLockGroup,
     toggleMuteGroup,
     removeGroup,

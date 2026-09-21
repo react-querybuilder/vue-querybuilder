@@ -138,6 +138,17 @@ const undoRedoClassNames = computed(() =>
     :rules="parts.ruleGroup.rules"
     :ruleOrGroup="parts.ruleGroup" />
   <component
+    :is="controls.ungroupAction"
+    v-if="schema.showUngroupButtons && path.length > 0"
+    v-bind="common"
+    :testID="TestID.ungroup"
+    :label="translations.ungroupRuleGroup?.label"
+    :title="translations.ungroupRuleGroup?.title"
+    :className="parts.classNames.ungroup"
+    :handleOnClick="parts.ungroup"
+    :rules="parts.ruleGroup.rules"
+    :ruleOrGroup="parts.ruleGroup" />
+  <component
     :is="controls.lockGroupAction"
     v-if="schema.showLockButtons"
     v-bind="common"

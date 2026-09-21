@@ -84,6 +84,7 @@ const flags = ref({
   showNotToggle: true,
   showShiftActions: true,
   showCloneButtons: true,
+  showUngroupButtons: true,
   showLockButtons: true,
   showMuteButtons: true,
   showUndoRedo: true,

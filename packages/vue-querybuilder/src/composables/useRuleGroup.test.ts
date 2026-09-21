@@ -202,6 +202,12 @@ describe('useRuleGroup', () => {
       expect(calls[0]).toMatchObject({ name: 'onGroupRemove', args: [[1]] });
     });
 
+    it('ungroups a group, passing only the path — core takes no clone flag', () => {
+      const { result, calls } = setup({ path: [1] });
+      result.ungroup();
+      expect(calls[0]).toMatchObject({ name: 'ungroupRuleGroup', args: [[1]] });
+    });
+
     it('shifts up and down, forwarding altKey as the clone flag', () => {
       const { result, calls } = setup({ path: [1] });
       result.shiftGroupUp(clickEvent(true));
@@ -226,6 +232,7 @@ describe('useRuleGroup', () => {
       result.addGroup();
       result.cloneGroup();
       result.removeGroup();
+      result.ungroup();
       result.shiftGroupUp();
       result.shiftGroupDown();
       expect(calls).toHaveLength(0);

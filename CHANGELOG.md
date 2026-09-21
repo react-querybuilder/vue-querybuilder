@@ -25,6 +25,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that control receives — `defineProps<ControlProps<'valueEditor'>>()`, or a `Pick` of it when a
   replacement declares only a subset. Type-only and additive; `K` is derived from core's
   `ControlKey`, so the alias cannot drift from the canonical key list.
+- **Ungroup**, ported from core 8.24.0. Set `showUngroupButtons` to render an "Ungroup" button
+  (`⊟`) in the header of every group except the root, which replaces that group with its own
+  rules in the parent. Adds the `ungroupAction` control key (defaulting to `ActionElement`, and a
+  target of the `actionElement` bulk override and the `#actionElement` slot like every other
+  `controlKind: 'action'` key), the `onUngroup` callback prop — return `false` to cancel or a
+  replacement query to substitute one, matching `onMoveRule`/`onGroupRule` — and `ungroup` on
+  `UseRuleGroupReturn`. Named for core's `ruleGroupHeaderElements` key, not for the
+  `QueryActions.ungroupRuleGroup` method it calls.
+- **Conformance fixtures now track upstream `v8.24.1`** (from `v8.23.0`). The `allControls`
+  scenario gains `showUngroupButtons`, which is what proves the new button's placement, class,
+  and label byte-for-byte against React's output.
 
 ### Removed
 
