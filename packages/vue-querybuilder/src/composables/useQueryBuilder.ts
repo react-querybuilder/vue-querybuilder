@@ -166,6 +166,21 @@ export const useQueryBuilder = <
   type OName = GetOptionIdentifierType<O>;
   type FName = GetOptionIdentifierType<F>;
 
+  /*
+   * Phases, in document order. They are delimited by `#region` banners below but deliberately
+   * not extracted: the `live()` closures, the schema bag, and the controlled write-back guard
+   * all close over the same manager *and* the same merged config, so any split either returns a
+   * ~15-member bag or re-derives the merged config a second time.
+   *
+   *   1. Manager lifecycle — option assembly, construction or adoption, initial query seeding.
+   *   2. Resolver derivation — option lists read back off the manager, plus the resolvers the
+   *      schema exposes.
+   *   3. Query state and controlled write-back — the `shallowRef`, the manager subscription, the
+   *      mount notification, and the `query`-prop guard.
+   *   4. Reconfigure watcher and equality gate — structural options re-applied in place.
+   *   5. Derived config and schema assembly — everything the components actually read.
+   */
+
   const getProps = (): QueryBuilderProps<RuleGroupTypeAny, F, O, FullCombinator> =>
     toValue(props) as QueryBuilderProps<RuleGroupTypeAny, F, O, FullCombinator>;
 
@@ -182,7 +197,7 @@ export const useQueryBuilder = <
       }) satisfies MergedQueryBuilderConfig<F, OName>
   );
 
-  // #region Manager
+  // #region Phase 1 — Manager lifecycle
   const initialProps = getProps();
 
   const maxLevels = computed(() =>
@@ -317,7 +332,7 @@ export const useQueryBuilder = <
   }
   // #endregion
 
-  // #region Option lists
+  // #region Phase 2 — Resolver derivation: option lists
   // Read off the manager, which prepares them from the same options — including `translations`,
   // which supplies the placeholder options when `autoSelect*` is `false`. Keyed on
   // `configVersion` so that a reconfigure (see below) refreshes them.
@@ -342,7 +357,7 @@ export const useQueryBuilder = <
   );
   // #endregion
 
-  // #region Resolvers
+  // #region Phase 2 — Resolver derivation: resolvers
   const getParameters = (
     field?: string,
     operator?: string,
@@ -402,7 +417,7 @@ export const useQueryBuilder = <
     });
   // #endregion
 
-  // #region Query state
+  // #region Phase 3 — Query state and controlled write-back
   // `shallowRef`, not `ref`: queries are immutable and are replaced wholesale, and a deep proxy
   // would both defeat the reference comparisons this design rests on and be rejected by the
   // manager's Immer deep-freeze.
@@ -465,7 +480,9 @@ export const useQueryBuilder = <
       manager.setQuery(raw);
     }
   );
+  // #endregion
 
+  // #region Phase 4 — Reconfigure watcher and equality gate
   // Structural options are applied in place, so the query, the undo/redo history, and every
   // subscriber survive a config change. Skipped entirely for an externally supplied manager:
   // that one belongs to the consumer.
@@ -493,7 +510,7 @@ export const useQueryBuilder = <
 
   const actions = useQueryActions<F, O>(getProps, manager);
 
-  // #region Derived config
+  // #region Phase 5 — Derived config and schema assembly
   const independentCombinators = computed(() => isRuleGroupTypeIC(query.value));
   const queryDisabled = computed(() => getProps().disabled === true);
   const rootGroupDisabled = computed(

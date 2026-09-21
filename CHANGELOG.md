@@ -21,6 +21,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   subcomponent still receives the same props. _Props for parity, inject for ergonomics._ Each
   returns `undefined` when there is no provider, and is safe to call outside a component
   instance.
+- **`ControlProps<K>`** (and its key union `ControlPropsKey`), mapping a control key to the props
+  that control receives — `defineProps<ControlProps<'valueEditor'>>()`, or a `Pick` of it when a
+  replacement declares only a subset. Type-only and additive; `K` is derived from core's
+  `ControlKey`, so the alias cannot drift from the canonical key list.
 
 ### Removed
 
