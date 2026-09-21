@@ -699,7 +699,7 @@ export interface QueryBuilderPropsBase<
    * This callback is invoked before a rule group is ungrouped.
    */
   // oxlint-disable-next-line typescript/no-explicit-any
-  onUngroup?(ruleGroup: RG, path: Path, query: RG, nextQuery: RG, context?: any): boolean;
+  onUngroup?(ruleGroup: RG, path: Path, query: RG, nextQuery: RG, context?: any): RG | boolean;
   /**
    * This callback is invoked anytime the query state is updated. Equivalent to listening
    * for the `update:query` event.
