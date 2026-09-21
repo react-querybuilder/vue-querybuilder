@@ -10,9 +10,9 @@ The package `@react-querybuilder/vue` (repo/folder name `vue-querybuilder`) is a
 document order, `data-testid`, `data-path`, byte-identical `class` attributes, and each element's
 own direct text must match React Query Builder's output for all conformance cases.
 
-The scoped name is **temporary**: npm's automated check rejects `vue-querybuilder` as too close
-to the existing `vue-query-builder`. Publish as `vue-querybuilder` once that name frees up. Repo
-URL, git remote, and every `packages/vue-querybuilder/...` path stay as they are.
+`@react-querybuilder/vue` is the published name and is not going to change. The repo, its git
+remote, and every `packages/vue-querybuilder/...` path keep the unscoped spelling; only the npm
+package is scoped.
 
 Blueprint: `svelte-querybuilder@0.1.1`. Deviate only where Vue idiom demands.
 

@@ -94,9 +94,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Package renamed from `vue-querybuilder` to `@react-querybuilder/vue`. npm rejected the
-  unscoped name as too similar to the existing `vue-query-builder`. **This is temporary** — the
-  package will be published as `vue-querybuilder` once npm allows that name. The repository,
+- Package renamed from `vue-querybuilder` to `@react-querybuilder/vue`. The repository,
   directory layout, and git remote are unchanged.
 
 ## [0.1.0] - 2026-08-06

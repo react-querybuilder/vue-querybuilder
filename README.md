@@ -5,10 +5,6 @@ Vue 3 component for complex query building. A port of
 [`@react-querybuilder/core`](https://www.npmjs.com/package/@react-querybuilder/core), producing
 byte-identical DOM output.
 
-> **Package name is temporary.** The intended name is `vue-querybuilder`, but npm's automated
-> checks currently reject it as too similar to the existing `vue-query-builder`. The package
-> ships as `@react-querybuilder/vue` until that name is available.
-
 ## Installation
 
 ```bash
