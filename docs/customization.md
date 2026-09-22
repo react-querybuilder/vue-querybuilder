@@ -203,6 +203,28 @@ stray attributes.
 Keep `data-testid`, `class`, and `title` if you want the standard stylesheets — and any tests
 written against the standard DOM — to keep working.
 
+#### Declaring props by control key
+
+The named props types (`ValueEditorProps`, `ActionProps`, …) are the direct route. When you would
+rather name the _control key_ — the key you pass to `controlElements` or use as a slot name —
+`ControlProps<K>` maps a key to the props that key receives, so a replacement cannot drift from
+what the rendering parent actually passes:
+
+```ts
+import type { ControlProps } from '@react-querybuilder/vue';
+
+// Equivalent to `ValueEditorProps`.
+defineProps<ControlProps<'valueEditor'>>();
+
+// Or just the props you use. Set `inheritAttrs: false` when declaring a subset.
+defineProps<Pick<ControlProps<'valueEditor'>, 'value' | 'handleOnChange'>>();
+```
+
+`K` is constrained to the control keys this port renders, so a typo or a drag-and-drop key
+(`dragHandle`, a non-goal here) is a compile error. The field and option-name type parameters
+default to `FullField`/`string` and can be narrowed:
+`ControlProps<'valueEditor', MyField, MyOperatorName>`.
+
 ### Props for parity, inject for ergonomics
 
 The prop bag is the contract with React Query Builder, and it does not change: a component ported
@@ -281,6 +303,56 @@ const manager = new QueryManager({ combinator: 'and', rules: [] }, { history: tr
   <QueryBuilder :fields="fields" :manager="manager" />
 </template>
 ```
+
+### Holding the manager in a store
+
+A `QueryManager` can live in a Pinia store — or any `reactive()` container — and be shared by
+unrelated components. This works as of `@react-querybuilder/core` 8.23.0, which moved the
+manager's state into a non-enumerable, symbol-keyed own property flagged `__v_skip`: it reads
+correctly through a reactive proxy, and `reactive()` will not deep-proxy its internals. On older
+cores the same code threw `Cannot read private member #past`. See
+[§3 of the differences doc](./differences-from-react-querybuilder.md#3-state-management) for the
+proxy-safety note in full.
+
+```ts
+// stores/query.ts
+import { QueryManager } from '@react-querybuilder/vue';
+import { defineStore } from 'pinia';
+import { shallowRef } from 'vue';
+
+export const useQueryStore = defineStore('query', () => {
+  // The manager is stable; do not wrap it in `ref`. `shallowRef` mirrors the current query so
+  // components re-render on commit — a deep `ref` would be rejected by the manager's
+  // deep-freeze.
+  const manager = new QueryManager({ combinator: 'and', rules: [] }, { history: true });
+  const query = shallowRef(manager.getQuery());
+  manager.subscribe(() => {
+    query.value = manager.getQuery();
+  });
+  return { manager, query };
+});
+```
+
+```vue
+<script setup lang="ts">
+import { QueryBuilder } from '@react-querybuilder/vue';
+import { useQueryStore } from './stores/query';
+
+const store = useQueryStore();
+</script>
+
+<template>
+  <button type="button" @click="store.manager.undo()">Undo</button>
+  <QueryBuilder :fields="fields" :manager="store.manager" />
+  <pre>{{ store.query }}</pre>
+</template>
+```
+
+Pass only `manager` — not `query`/`v-model:query` alongside it. The manager already owns the
+query; a `query` prop would push a second source of truth into it.
+
+Pinia is not a dependency of this package. Nothing above is Pinia-specific beyond
+`defineStore` — the same shape works with a plain module-scoped composable.
 
 ## Classnames
 

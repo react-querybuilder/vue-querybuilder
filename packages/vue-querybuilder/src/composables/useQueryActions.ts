@@ -14,8 +14,9 @@ import { toRaw } from 'vue';
 import type { QueryBuilderProps } from '../types/props.js';
 
 /**
- * The `onAdd*`/`onMove*`/`onGroup*`/`onRemove` props return `false` to cancel an operation, a
- * replacement rule/group (for adds), or a replacement query (for moves and groupings).
+ * The `onAdd*`/`onMove*`/`onGroup*`/`onRemove`/`onUngroup` props return `false` to cancel an
+ * operation, a replacement rule/group (for adds), or a replacement query (for moves, groupings,
+ * and ungroupings).
  */
 type Confirmation = unknown;
 
@@ -170,6 +171,40 @@ export const useQueryActions = <
     manager.group(sourcePath, targetPath, { clone });
   };
 
+  // Unlike `moveRule`/`groupRule`, core's signature takes no `clone` flag: ungrouping is not a
+  // copy operation. An extra parameter here would silently swallow the caller's `context`.
+  const ungroupRuleGroup: QueryActions['ungroupRuleGroup'] = (
+    path,
+    // oxlint-disable-next-line typescript/no-explicit-any
+    context?: any
+  ) => {
+    const { onUngroup } = getProps();
+    // Mirrors core's guard: the root has no parent to be absorbed into, and only a group can be
+    // replaced by its own rules.
+    const ruleGroup = path.length === 0 ? undefined : manager.findPath(path);
+    if (!ruleGroup || !isRuleGroup(ruleGroup)) return;
+
+    if (onUngroup) {
+      const query = manager.getQuery();
+      const nextQuery = preview(qm => qm.ungroup(path));
+      if (!nextQuery) return;
+      const result = onUngroup(
+        ruleGroup as never,
+        path,
+        query as never,
+        nextQuery as never,
+        context
+      );
+      if (isCancelled(result)) return;
+      if (typeof result === 'object') {
+        manager.setQuery(toRaw(result) as RuleGroupTypeAny);
+        return;
+      }
+    }
+
+    manager.ungroup(path);
+  };
+
   return {
     onRuleAdd,
     onGroupAdd,
@@ -178,5 +213,6 @@ export const useQueryActions = <
     onGroupRemove: onRuleOrGroupRemove,
     moveRule,
     groupRule,
+    ungroupRuleGroup,
   };
 };

@@ -1,4 +1,4 @@
-import type { FullField } from '@react-querybuilder/core';
+import type { ControlKey, FullField } from '@react-querybuilder/core';
 import type { Component, Slot } from 'vue';
 import type {
   ActionProps,
@@ -159,6 +159,10 @@ export type ControlPropsMap<F extends FullField, O extends string> = {
    */
   undoRedoActions: UndoRedoActionsProps;
   /**
+   * Ungroup button for groups that are not the outermost group, rendered when the `showUngroupButtons` prop is `true`.
+   */
+  ungroupAction: ActionProps;
+  /**
    * Updates the `value` property for the current rule.
    *
    * @default ValueEditor
@@ -177,6 +181,37 @@ export type ControlPropsMap<F extends FullField, O extends string> = {
    */
   valueSourceSelector: ValueSourceSelectorProps;
 };
+
+/**
+ * The control keys {@link ControlProps} accepts: core's canonical {@link ControlKey} list,
+ * narrowed to the keys this port actually renders (no `dragHandle`, no
+ * `ruleGroupHeaderElements`/`ruleGroupBodyElements`).
+ *
+ * Deriving from `ControlKey` rather than from `keyof ControlPropsMap` is the point — the port
+ * cannot invent a key core does not have.
+ *
+ * @group Props
+ */
+export type ControlPropsKey = Extract<ControlKey, keyof ControlPropsMap<FullField, string>>;
+
+/**
+ * The props a given control key receives.
+ *
+ * For authors of replacement controls: derive your `defineProps` from this so it cannot drift
+ * from what the rendering parent actually passes. Declaring a subset is fine — the parent passes
+ * the full bag regardless:
+ *
+ * ```ts
+ * defineProps<Pick<ControlProps<'valueEditor'>, 'value' | 'handleOnChange'>>();
+ * ```
+ *
+ * @group Props
+ */
+export type ControlProps<
+  K extends ControlPropsKey,
+  F extends FullField = FullField,
+  O extends string = string,
+> = ControlPropsMap<F, O>[K];
 
 /**
  * The keys of {@link ControlPropsMap} that cannot be set to `null`.

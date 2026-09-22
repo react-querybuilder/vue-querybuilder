@@ -65,6 +65,7 @@ export const createRecordingActions = (): { actions: QueryActions; calls: Record
       onGroupRemove: record('onGroupRemove'),
       moveRule: record('moveRule'),
       groupRule: record('groupRule'),
+      ungroupRuleGroup: record('ungroupRuleGroup'),
     } as unknown as QueryActions,
   };
 };

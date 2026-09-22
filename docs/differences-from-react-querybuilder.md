@@ -82,7 +82,9 @@ it happens by accident more often than by choice. As of `@react-querybuilder/cor
 manager's state lives in a non-enumerable, symbol-keyed own property, which reads correctly
 through a `Proxy`, and that property is flagged so `reactive()` will not deep-proxy the internals
 either. No `toRaw()` is required. (Before 8.23.0 the state was in `#private` fields and every
-call through a proxy threw `Cannot read private member #past`.)
+call through a proxy threw `Cannot read private member #past`.) That is what makes a manager held
+in a Pinia store work; see
+[Holding the manager in a store](./customization.md#holding-the-manager-in-a-store).
 
 ## 4. Query binding
 

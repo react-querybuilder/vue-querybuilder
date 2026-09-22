@@ -60,6 +60,7 @@ const props = withDefaults(defineProps<QueryBuilderPropsBase<RG, RuleTypeOf<RG>,
   showCloneButtons: undefined,
   showLockButtons: undefined,
   showMuteButtons: undefined,
+  showUngroupButtons: undefined,
   resetOnFieldChange: undefined,
   resetOnOperatorChange: undefined,
   autoSelectField: undefined,
@@ -90,8 +91,13 @@ const slots = useSlots();
 // Slots are folded into the props object rather than passed separately, so that they merge
 // through exactly the same path as `controlElements` and are inherited through `provide`. An
 // explicitly passed `slots` prop wins over a template slot of the same name.
+//
+// The cast is generic variance, not a slot-typing gap: `useQueryBuilder` is invoked at
+// `RuleGroupTypeAny`/`FullCombinator`, and `QueryManager<RG, F, O, C>` is invariant in `RG`
+// (`getQuery(): RG`), so this component's own `RG`/`C` parameters do not flow into it. Dropping
+// the cast fails on `manager`; the slot merge itself typechecks.
 const getProps = (): QueryBuilderProps<RuleGroupTypeAny, F, O, FullCombinator> =>
-  ({ ...props, slots: { ...slots, ...props.slots } }) as unknown as QueryBuilderProps<
+  ({ ...props, slots: { ...slots, ...props.slots } }) as QueryBuilderProps<
     RuleGroupTypeAny,
     F,
     O,

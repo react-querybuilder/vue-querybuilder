@@ -98,6 +98,7 @@ describe('control props', () => {
       showShiftActions: true,
       showNotToggle: true,
       showUndoRedo: true,
+      showUngroupButtons: true,
     };
 
     // Every rendering path, since a control only reports what it is actually handed: the

@@ -65,13 +65,13 @@
     "vue": "^3.5"
   },
   "dependencies": {
-    "@react-querybuilder/core": "^8.23.0"
+    "@react-querybuilder/core": "^8.24.1"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "typescript": "^5.9.3",
-    "vue": "^3.5.41",
-    "vue-tsc": "^3.3.9"
+    "vue": "^3.5.43",
+    "vue-tsc": "^3.3.11"
   },
   "publishConfig": {
     "access": "public"

@@ -51,6 +51,7 @@ export const defaultControlElements = {
   },
   shiftActions: ShiftActions,
   undoRedoActions: UndoRedoActions,
+  ungroupAction: ActionElement,
   valueEditor: ValueEditor,
   valueSelector: ValueSelector,
   valueSourceSelector: ValueSelector,

@@ -74,6 +74,7 @@ describe('accessibility', () => {
         defaultQuery: queries.icNested,
         showNotToggle: true,
         showCloneButtons: true,
+        showUngroupButtons: true,
         showLockButtons: true,
         showShiftActions: true,
         showMuteButtons: true,
@@ -123,6 +124,41 @@ describe('keyboard navigation', () => {
     expect(reached).toEqual(expected);
     // The next tab leaves the rule entirely.
     expect(rule.contains(document.activeElement)).toBe(false);
+  });
+
+  it('reaches the ungroup button in a nested group header, after clone and before lock', async () => {
+    render(QueryBuilder, {
+      props: {
+        fields,
+        defaultQuery: queries.nested,
+        showCloneButtons: true,
+        showUngroupButtons: true,
+        showLockButtons: true,
+      } as never,
+    });
+
+    const header = screen
+      .getAllByTestId(TestID.ruleGroup)[1]
+      .querySelector<HTMLElement>('.ruleGroup-header')!;
+    const order = [...header.querySelectorAll<HTMLElement>('button, select, input')].map(el =>
+      el.closest('[data-testid]')!.getAttribute('data-testid')!
+    );
+    expect(order).toEqual([
+      TestID.combinators,
+      TestID.addRule,
+      TestID.addGroup,
+      TestID.cloneGroup,
+      TestID.ungroup,
+      TestID.lockGroup,
+      TestID.removeGroup,
+    ]);
+
+    // Four groups: the root plus three nested. Only the nested ones get an ungroup button.
+    expect(screen.getAllByTestId(TestID.ruleGroup)).toHaveLength(4);
+    screen.getAllByTestId(TestID.ungroup)[0].focus();
+    await userEvent.keyboard('{Enter}');
+
+    expect(screen.getAllByTestId(TestID.ruleGroup)).toHaveLength(3);
   });
 
   it('activates a button control with the keyboard', async () => {

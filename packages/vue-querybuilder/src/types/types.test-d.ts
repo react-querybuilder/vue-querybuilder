@@ -20,6 +20,8 @@ import type {
   ControlComponent,
   ControlElementsProp,
   ControlPropsMap,
+  ControlProps,
+  ControlPropsKey,
   ControlSlots,
   Controls,
   LabelNode,
@@ -225,5 +227,33 @@ type UndeclaredPropKeys<K extends GatedControlKey> = Exclude<
 type AssertNever<T extends never> = T;
 type _NoUndeclaredControlProps = AssertNever<
   { [K in GatedControlKey]: UndeclaredPropKeys<K> }[GatedControlKey]
+>;
+// #endregion
+
+// #region ControlProps alias
+// `ControlProps<K>` is the authoring surface for replacement controls. It must stay mutually
+// assignable with the props type the rendering parent passes for that key, or a control author
+// derives `defineProps` from a lie.
+declare const controlPropsValueEditor: ControlProps<'valueEditor'>;
+declare const controlPropsActionElement: ControlProps<'actionElement'>;
+assertType<ValueEditorProps<FullField, string>>(controlPropsValueEditor);
+assertType<ControlProps<'valueEditor'>>(valueEditorProps);
+assertType<ActionProps>(controlPropsActionElement);
+assertType<ControlProps<'actionElement'>>(actionProps);
+
+// The generic parameters flow through to the props type.
+declare const controlPropsNarrowed: ControlProps<'valueEditor', FullField, 'and' | 'or'>;
+assertType<ValueEditorProps<FullField, 'and' | 'or'>>(controlPropsNarrowed);
+
+// A key this port does not render is rejected, as is a key core does not have.
+// @ts-expect-error drag-and-drop is a non-goal, so there is no `dragHandle` control
+assertType<unknown>(null as unknown as ControlProps<'dragHandle'>);
+// @ts-expect-error not a control key at all
+assertType<unknown>(null as unknown as ControlProps<'notAControl'>);
+
+// Every key the alias accepts is one the map actually has — so `ControlPropsKey` cannot silently
+// widen if core adds a key this port does not implement.
+type _ControlPropsKeysAreMapKeys = AssertNever<
+  Exclude<ControlPropsKey, keyof ControlPropsMap<FullField, string>>
 >;
 // #endregion
